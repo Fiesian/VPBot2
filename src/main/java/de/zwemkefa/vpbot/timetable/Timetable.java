@@ -6,9 +6,7 @@ import org.json.JSONObject;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.*;
 
 public class Timetable {
 
@@ -16,10 +14,12 @@ public class Timetable {
 
     private boolean[] emptyDays;
     private ArrayList<Period> periods;
+    private Map<Integer, String> subjectNames;
 
-    private Timetable(boolean[] emptyDays, ArrayList<Period> periods) {
+    private Timetable(boolean[] emptyDays, ArrayList<Period> periods, Map<Integer, String> subjectNames) {
         this.emptyDays = emptyDays;
         this.periods = periods;
+        this.subjectNames = subjectNames;
     }
 
     public boolean[] getEmptyDays() {
@@ -28,6 +28,10 @@ public class Timetable {
 
     public ArrayList<Period> getPeriods() {
         return periods;
+    }
+
+    public Map<Integer, String> getSubjectNames() {
+        return subjectNames;
     }
 
     @Override
@@ -52,8 +56,24 @@ public class Timetable {
 
         boolean[] emptyDays = new boolean[]{true, true, true, true, true};
         ArrayList<Period> periods = new ArrayList<>();
+        HashMap<Integer, String> subjectNames = new HashMap<>();
 
         try {
+            //Subject names
+            JSONObject subjects = new JSONObject(raw)
+                    .getJSONObject("data")
+                    .getJSONObject("result")
+                    .getJSONObject("data")
+                    .getJSONObject("elements");
+
+            for (Integer i = 0; subjects.has(i.toString()); i++) {
+                JSONObject subject = subjects.getJSONObject(i.toString());
+                if (subject.getInt("type") == 3) {
+                    subjectNames.put(subject.getInt("id"), subject.getString("name"));
+                }
+            }
+
+            //Periods
             JSONObject elementPeriods = new JSONObject(raw)
                     .getJSONObject("data")
                     .getJSONObject("result")
@@ -89,7 +109,7 @@ public class Timetable {
 
             return null;
         }
-        return new Timetable(emptyDays, periods);
+        return new Timetable(emptyDays, periods, subjectNames);
     }
 
     private static LocalDate toLocalDate(String s) {
