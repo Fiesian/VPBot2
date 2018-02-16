@@ -36,9 +36,10 @@
             <artifactId>Discord4J</artifactId>
             <version>LATEST</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
             <version>LATEST</version>
         </dependency>
     </dependencies>

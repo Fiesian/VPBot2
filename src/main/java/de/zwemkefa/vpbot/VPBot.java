@@ -1,15 +1,11 @@
 package de.zwemkefa.vpbot;
 
-import sx.blah.discord.api.ClientBuilder;
+import de.zwemkefa.vpbot.io.UntisIOHelper;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.EmbedBuilder;
 import sx.blah.discord.util.RequestBuffer;
-
-import java.awt.*;
-import java.time.LocalDateTime;
 
 public class VPBot {
 
@@ -17,8 +13,11 @@ public class VPBot {
 
     private IDiscordClient client;
 
+    private UntisIOHelper ioHelper;
+
     public VPBot(){
-        this.client = new ClientBuilder()
+        this.ioHelper = new UntisIOHelper();
+        /*this.client = new ClientBuilder()
                 .withToken("!!!Mzk3NDUzMjYxODM1MDc1NTg2.DWgahw.mEIyoZXS6w_EXBLMKgJCFH8UyE4")
                 .build();
         client.login();
@@ -73,7 +72,7 @@ public class VPBot {
                 .withDescription("Ein Fehler ist aufgetreten.")
                 .withFooterText("TestException | TestDescription")
                 .withTimestamp(LocalDateTime.now())
-                .build());
+                .build());*/
     }
 
     public static VPBot getInstance() {
