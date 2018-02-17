@@ -43,40 +43,48 @@ public class DiscordFormatter {
                     e.appendField(DAY_NAMES[loopDay], b.toString(), false);
                     b = null;
                 }
-
-                if (++loopDay == d) {
-                    if (b == null) {
-                        b = new StringBuilder();
-                    }
-                    switch (p.get().getCellState()) {
-                        case CANCEL:
-                            b.append(t.getSubjectNames().get(p.get().getSubject()) + " wird zwischen " + TIME_FORMATTER.format(p.get().getStart()) + " und " + TIME_FORMATTER.format(p.get().getEnd()) + " ausfallen.\n");
-                            break;
-
-                        case SUBSTITUTION:
-                            b.append(t.getSubjectNames().get(p.get().getSubject()) + " wird zwischen " + TIME_FORMATTER.format(p.get().getStart()) + " und " + TIME_FORMATTER.format(p.get().getEnd()) + " vertreten werden.\n");
-                            break;
-
-                        case ADDITIONAL:
-                            b.append(t.getSubjectNames().get(p.get().getSubject()) + " wird zwischen " + TIME_FORMATTER.format(p.get().getStart()) + " und " + TIME_FORMATTER.format(p.get().getEnd()) + " zusätzlich stattfinden.\n");
-                            break;
-
-                        case FREE:
-                            b.append(t.getSubjectNames().get(p.get().getSubject()) + " wird zwischen " + TIME_FORMATTER.format(p.get().getStart()) + " und " + TIME_FORMATTER.format(p.get().getEnd()) + " nicht stattfinden.\n");
-                            break;
-
-                        case ROOMSUBSTITUTION:
-                            b.append(t.getSubjectNames().get(p.get().getSubject()) + " wird zwischen " + TIME_FORMATTER.format(p.get().getStart()) + " und " + TIME_FORMATTER.format(p.get().getEnd()) + " in einem anderen Raum stattfinden.\n");
-                            break;
-                    }
-                } else if (emptyDayList.get(loopDay) == true) {
+                if (emptyDayList.get(++loopDay) == true) {
                     if (b == null) {
                         b = new StringBuilder();
                     }
                     b.append("Am " + DAY_NAMES[loopDay] + " findet kein Unterricht statt.\n");
                 }
+
+            }
+            if (b == null) {
+                b = new StringBuilder();
+            }
+            String sub = t.getSubjectNames().containsKey(p.get().getSubject()) ? t.getSubjectNames().get(p.get().getSubject()) : "Etwas ";
+            switch (p.get().getCellState()) {
+                case CANCEL:
+                    b.append(sub + " wird zwischen " + TIME_FORMATTER.format(p.get().getStart()) + " und " + TIME_FORMATTER.format(p.get().getEnd()) + " ausfallen.\n");
+                    break;
+
+                case SUBSTITUTION:
+                    b.append(sub + " wird zwischen " + TIME_FORMATTER.format(p.get().getStart()) + " und " + TIME_FORMATTER.format(p.get().getEnd()) + " vertreten werden.\n");
+                    break;
+
+                case ADDITIONAL:
+                    b.append(sub + " wird zwischen " + TIME_FORMATTER.format(p.get().getStart()) + " und " + TIME_FORMATTER.format(p.get().getEnd()) + " zusätzlich stattfinden.\n");
+                    break;
+
+                case FREE:
+                    b.append(sub + " wird zwischen " + TIME_FORMATTER.format(p.get().getStart()) + " und " + TIME_FORMATTER.format(p.get().getEnd()) + " nicht stattfinden.\n");
+                    break;
+
+                case ROOMSUBSTITUTION:
+                    b.append(sub + " wird zwischen " + TIME_FORMATTER.format(p.get().getStart()) + " und " + TIME_FORMATTER.format(p.get().getEnd()) + " in einem anderen Raum stattfinden.\n");
+                    break;
+            }
+            if (p.get().getPeriodText().isPresent()) {
+                b.append("Anmerkung: \"" + p.get().getPeriodText().get() + "\"\n");
             }
             p = periods.findFirst();
+        }
+        if (b != null) {
+            b.setLength(b.length() - 1);
+            e.appendField(DAY_NAMES[loopDay], b.toString(), false);
+            b = null;
         }
 
         b.setLength(b.length() - 1);

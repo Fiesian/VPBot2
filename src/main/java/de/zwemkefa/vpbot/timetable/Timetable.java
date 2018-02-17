@@ -98,7 +98,7 @@ public class Timetable {
                             break;
                         }
                     }
-                    periods.add(new Period(state, startTime, endTime, subject));
+                    periods.add(new Period(state, startTime, endTime, subject, period.has("periodText") ? Optional.of(period.getString("periodText")) : Optional.empty()));
                 }
             }
         } catch (Exception e) {
@@ -130,12 +130,14 @@ public class Timetable {
         private LocalDateTime start;
         private LocalDateTime end;
         private int subject;
+        private Optional<String> periodText;
 
-        Period(CellState cellState, LocalDateTime start, LocalDateTime end, int subject) {
+        Period(CellState cellState, LocalDateTime start, LocalDateTime end, int subject, Optional<String> periodText) {
             this.cellState = cellState;
             this.start = start;
             this.end = end;
             this.subject = subject;
+            this.periodText = periodText;
         }
 
         public CellState getCellState() {
@@ -154,6 +156,10 @@ public class Timetable {
             return subject;
         }
 
+        public Optional<String> getPeriodText() {
+            return periodText;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -164,7 +170,8 @@ public class Timetable {
             if (subject != period.subject) return false;
             if (cellState != period.cellState) return false;
             if (start != null ? !start.equals(period.start) : period.start != null) return false;
-            return end != null ? end.equals(period.end) : period.end == null;
+            if (end != null ? !end.equals(period.end) : period.end != null) return false;
+            return periodText != null ? periodText.equals(period.periodText) : period.periodText == null;
         }
 
         @Override
@@ -173,6 +180,7 @@ public class Timetable {
             result = 31 * result + (start != null ? start.hashCode() : 0);
             result = 31 * result + (end != null ? end.hashCode() : 0);
             result = 31 * result + subject;
+            result = 31 * result + (periodText != null ? periodText.hashCode() : 0);
             return result;
         }
     }
