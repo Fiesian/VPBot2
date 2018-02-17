@@ -1,6 +1,7 @@
 package de.zwemkefa.vpbot;
 
 import de.zwemkefa.vpbot.io.UntisIOHelper;
+import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.obj.IChannel;
@@ -15,64 +16,14 @@ public class VPBot {
 
     private UntisIOHelper ioHelper;
 
-    public VPBot(){
-        this.ioHelper = new UntisIOHelper();
-        /*this.client = new ClientBuilder()
+    public VPBot() {
+
+        this.client = new ClientBuilder()
                 .withToken("!!!Mzk3NDUzMjYxODM1MDc1NTg2.DWgahw.mEIyoZXS6w_EXBLMKgJCFH8UyE4")
                 .build();
         client.login();
-        try {
-            Thread.sleep(2000);
-        }
-        catch (InterruptedException e){
-            e.printStackTrace();
-        }
-        IChannel c = client.getUserByID(0l).getOrCreatePMChannel();
 
-        this.sendMessage(c, "Bin gerade am Testen wie der VPBot bald aussehen soll. Zum Antworten bitte direkt an @Fabian#7090 schreiben");
-
-        try {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e){
-            e.printStackTrace();
-        }
-
-        this.sendMessage(c, new EmbedBuilder()
-                .withColor(Color.GREEN)
-                .withTitle("Vertretungsplan 10c")
-                .withDescription("Der Vertretungsplan ist leer.")
-                .withTimestamp(LocalDateTime.now())
-                .build());
-
-        try {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e){
-            e.printStackTrace();
-        }
-
-        this.sendMessage(c, new EmbedBuilder()
-                .withColor(Color.YELLOW)
-                .withTitle("Vertretungsplan 10c")
-                .appendField("Montag", "Geschichte wird von 5:45 bis 19:45 vertreten.", false)
-                .withTimestamp(LocalDateTime.now())
-                .build());
-
-        try {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e){
-            e.printStackTrace();
-        }
-
-        this.sendMessage(c, new EmbedBuilder()
-                .withColor(Color.RED)
-                .withTitle("Vertretungsplan 10c")
-                .withDescription("Ein Fehler ist aufgetreten.")
-                .withFooterText("TestException | TestDescription")
-                .withTimestamp(LocalDateTime.now())
-                .build());*/
+        this.ioHelper = new UntisIOHelper();
     }
 
     public static VPBot getInstance() {

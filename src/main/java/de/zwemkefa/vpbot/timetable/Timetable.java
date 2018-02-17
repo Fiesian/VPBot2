@@ -12,17 +12,17 @@ public class Timetable {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("YYYYMMDD");
 
-    private boolean[] emptyDays;
+    private Boolean[] emptyDays;
     private ArrayList<Period> periods;
     private Map<Integer, String> subjectNames;
 
-    private Timetable(boolean[] emptyDays, ArrayList<Period> periods, Map<Integer, String> subjectNames) {
+    private Timetable(Boolean[] emptyDays, ArrayList<Period> periods, Map<Integer, String> subjectNames) {
         this.emptyDays = emptyDays;
         this.periods = periods;
         this.subjectNames = subjectNames;
     }
 
-    public boolean[] getEmptyDays() {
+    public Boolean[] getEmptyDays() {
         return emptyDays;
     }
 
@@ -54,7 +54,7 @@ public class Timetable {
 
     public static Timetable ofRawJSON(String raw, Optional<ExceptionHandler> exceptionHandler) {
 
-        boolean[] emptyDays = new boolean[]{true, true, true, true, true};
+        Boolean[] emptyDays = new Boolean[]{true, true, true, true, true};
         ArrayList<Period> periods = new ArrayList<>();
         HashMap<Integer, String> subjectNames = new HashMap<>();
 
@@ -122,7 +122,7 @@ public class Timetable {
     }
 
     public enum CellState {
-        STANDARD, ADDITIONAL, CANCEL, SUBSTITUTION;
+        STANDARD, ADDITIONAL, CANCEL, SUBSTITUTION, FREE, ROOMSUBSTITUTION;
     }
 
     public static class Period {
