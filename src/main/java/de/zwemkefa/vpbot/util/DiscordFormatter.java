@@ -93,4 +93,20 @@ public class DiscordFormatter {
         }
         return e.build();
     }
+
+    public static EmbedObject formatErrorMessage(Exception e) {
+        EmbedBuilder b = new EmbedBuilder();
+        b.withTitle("Ein Fehler ist aufgetreten.");
+        b.appendDescription(e.getMessage());
+        StackTraceElement[] trace = e.getStackTrace();
+        for (int i = 0; i < trace.length; i++) {
+            if (trace[i].getClassName().startsWith("de.zwemkefa")) {
+                b.appendField("Stacktrace", "[" + i + "]" + " " + trace[i].getClassName() + "#" + trace[i].getMethodName() + "@" + trace[i].getLineNumber(), false);
+                break;
+            }
+        }
+        b.withColor(Color.RED);
+        b.withFooterText(e.getClass().getName() + " am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()));
+        return b.build();
+    }
 }
