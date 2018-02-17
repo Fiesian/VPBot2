@@ -23,7 +23,7 @@ public class UntisIOHelper {
             HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/data?elementType=1&elementId="+ classID + "&date=" + this.getDateString() + "&formatId=1").openConnection();
             con.setRequestProperty("Cookie", "schoolname=" + UntisIOHelper.SCHOOLNAME);
             con.connect();
-            StringBuffer answer = new StringBuffer();
+            StringBuilder answer = new StringBuilder();
             BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
@@ -33,9 +33,7 @@ public class UntisIOHelper {
 
             return answer.toString();
         } catch (Exception e){
-            if(exceptionHandler.isPresent()){
-                exceptionHandler.get().handleException(e);
-            }
+            exceptionHandler.ifPresent(exceptionHandler1 -> exceptionHandler1.handleException(e));
             e.printStackTrace();
         }
 
@@ -47,7 +45,7 @@ public class UntisIOHelper {
             HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/pageconfig?type=1&id=123&date=" + this.getDateString() + "&formatId=1").openConnection();
             con.setRequestProperty("Cookie", "schoolname=" + UntisIOHelper.SCHOOLNAME);
             con.connect();
-            StringBuffer answer = new StringBuffer();
+            StringBuilder answer = new StringBuilder();
             BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
@@ -57,9 +55,7 @@ public class UntisIOHelper {
 
             return answer.toString();
         } catch (Exception e){
-            if(exceptionHandler.isPresent()){
-                exceptionHandler.get().handleException(e);
-            }
+            exceptionHandler.ifPresent(exceptionHandler1 -> exceptionHandler1.handleException(e));
             e.printStackTrace();
         }
 

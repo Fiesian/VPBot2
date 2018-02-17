@@ -41,8 +41,7 @@ public class Timetable {
 
         Timetable timetable = (Timetable) o;
 
-        if (!Arrays.equals(emptyDays, timetable.emptyDays)) return false;
-        return periods != null ? periods.equals(timetable.periods) : timetable.periods == null;
+        return Arrays.equals(emptyDays, timetable.emptyDays) && (periods != null ? periods.equals(timetable.periods) : timetable.periods == null);
     }
 
     @Override
@@ -105,8 +104,7 @@ public class Timetable {
         } catch (Exception e) {
             e.printStackTrace();
 
-            if (exceptionHandler.isPresent())
-                exceptionHandler.get().handleException(e);
+            exceptionHandler.ifPresent(exceptionHandler1 -> exceptionHandler1.handleException(e));
 
             return null;
         }
@@ -123,7 +121,7 @@ public class Timetable {
     }
 
     public enum CellState {
-        STANDARD, ADDITIONAL, CANCEL, SUBSTITUTION, FREE, ROOMSUBSTITUTION;
+        STANDARD, ADDITIONAL, CANCEL, SUBSTITUTION, FREE, ROOMSUBSTITUTION
     }
 
     public static class Period {
@@ -171,8 +169,7 @@ public class Timetable {
             if (subject != period.subject) return false;
             if (cellState != period.cellState) return false;
             if (start != null ? !start.equals(period.start) : period.start != null) return false;
-            if (end != null ? !end.equals(period.end) : period.end != null) return false;
-            return periodText != null ? periodText.equals(period.periodText) : period.periodText == null;
+            return (end != null ? end.equals(period.end) : period.end == null) && (periodText != null ? periodText.equals(period.periodText) : period.periodText == null);
         }
 
         @Override

@@ -47,41 +47,39 @@ public class DiscordFormatter {
                     e.appendField(DAY_NAMES[loopDay - 1], b.toString(), false);
                     b = null;
                 }
-                if (emptyDayList.get(++loopDay) == true) {
-                    if (b == null) {
-                        b = new StringBuilder();
-                    }
-                    b.append("Am " + DAY_NAMES[loopDay - 1] + " findet kein Unterricht statt.\n");
+                if (emptyDayList.get(++loopDay)) {
+                    b = new StringBuilder();
+                    b.append("Am ").append(DAY_NAMES[loopDay - 1]).append(" findet kein Unterricht statt.\n");
                 }
 
             }
             if (b == null) {
                 b = new StringBuilder();
             }
-            String sub = t.getSubjectNames().containsKey(p.getSubject()) ? t.getSubjectNames().get(p.getSubject()) : "Etwas ";
+            String sub = t.getSubjectNames().getOrDefault(p.getSubject(), "Etwas ");
             switch (p.getCellState()) {
                 case CANCEL:
-                    b.append(sub + " wird zwischen " + TIME_FORMATTER.format(p.getStart()) + " und " + TIME_FORMATTER.format(p.getEnd()) + " ausfallen.\n");
+                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" ausfallen.\n");
                     break;
 
                 case SUBSTITUTION:
-                    b.append(sub + " wird zwischen " + TIME_FORMATTER.format(p.getStart()) + " und " + TIME_FORMATTER.format(p.getEnd()) + " vertreten werden.\n");
+                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" vertreten werden.\n");
                     break;
 
                 case ADDITIONAL:
-                    b.append(sub + " wird zwischen " + TIME_FORMATTER.format(p.getStart()) + " und " + TIME_FORMATTER.format(p.getEnd()) + " zusätzlich stattfinden.\n");
+                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" zusätzlich stattfinden.\n");
                     break;
 
                 case FREE:
-                    b.append(sub + " wird zwischen " + TIME_FORMATTER.format(p.getStart()) + " und " + TIME_FORMATTER.format(p.getEnd()) + " nicht stattfinden.\n");
+                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" nicht stattfinden.\n");
                     break;
 
                 case ROOMSUBSTITUTION:
-                    b.append(sub + " wird zwischen " + TIME_FORMATTER.format(p.getStart()) + " und " + TIME_FORMATTER.format(p.getEnd()) + " in einem anderen Raum stattfinden.\n");
+                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" in einem anderen Raum stattfinden.\n");
                     break;
             }
             if (p.getPeriodText().isPresent() && !p.getPeriodText().get().equals("")) {
-                b.append("Anmerkung: \"" + p.getPeriodText().get() + "\"\n");
+                b.append("Anmerkung: \"").append(p.getPeriodText().get()).append("\"\n");
             }
         }
         if (b != null) {
