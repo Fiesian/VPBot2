@@ -1,16 +1,16 @@
 package de.zwemkefa.vpbot.timetable;
 
 import de.zwemkefa.vpbot.util.ExceptionHandler;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Timetable {
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("YYYYMMDD");
 
     private Boolean[] emptyDays;
     private ArrayList<Period> periods;
@@ -60,39 +60,40 @@ public class Timetable {
 
         try {
             //Subject names
-            JSONObject subjects = new JSONObject(raw)
+            JSONArray subjects = new JSONObject(raw)
                     .getJSONObject("data")
                     .getJSONObject("result")
                     .getJSONObject("data")
-                    .getJSONObject("elements");
+                    .getJSONArray("elements");
 
-            for (Integer i = 0; subjects.has(i.toString()); i++) {
-                JSONObject subject = subjects.getJSONObject(i.toString());
+            for (Integer i = 0; i < subjects.length(); i++) {
+                JSONObject subject = subjects.getJSONObject(i);
                 if (subject.getInt("type") == 3) {
                     subjectNames.put(subject.getInt("id"), subject.getString("name"));
                 }
             }
 
             //Periods
-            JSONObject elementPeriods = new JSONObject(raw)
+            JSONArray elementPeriods = new JSONObject(raw)
                     .getJSONObject("data")
                     .getJSONObject("result")
                     .getJSONObject("data")
-                    .getJSONObject("elementPeriods");
+                    .getJSONObject("elementPeriods")
+                    .getJSONArray("123");
 
-            for (Integer i = 0; elementPeriods.has(i.toString()); i++) {
-                JSONObject period = elementPeriods.getJSONObject(i.toString());
-                LocalDate date = Timetable.toLocalDate(period.getString("date"));
+            for (Integer i = 0; i < elementPeriods.length(); i++) {
+                JSONObject period = elementPeriods.getJSONObject(i);
+                LocalDate date = Timetable.toLocalDate(period.get("date").toString());
                 emptyDays[date.getDayOfWeek().getValue() - 1] = false;
 
                 CellState state = CellState.valueOf(period.getString("cellState"));
                 if (state != CellState.STANDARD) {
-                    LocalDateTime startTime = Timetable.toLocalDateTime(date, period.getString("startTime"));
-                    LocalDateTime endTime = Timetable.toLocalDateTime(date, period.getString("endTime"));
-                    JSONObject elements = period.getJSONObject("elements");
+                    LocalDateTime startTime = Timetable.toLocalDateTime(date, period.getInt("startTime"));
+                    LocalDateTime endTime = Timetable.toLocalDateTime(date, period.getInt("endTime"));
+                    JSONArray elements = period.getJSONArray("elements");
                     int subject = 0;
-                    for (Integer j = 0; elements.has(j.toString()); j++) {
-                        JSONObject element = elements.getJSONObject(j.toString());
+                    for (Integer j = 0; j < elements.length(); j++) {
+                        JSONObject element = elements.getJSONObject(j);
                         if (element.getInt("type") == 3) {
                             subject = element.getInt("id");
                             break;
@@ -109,16 +110,16 @@ public class Timetable {
 
             return null;
         }
+        periods.sort(Comparator.comparing(Period::getStart));
         return new Timetable(emptyDays, periods, subjectNames);
     }
 
-    private static LocalDate toLocalDate(String s) {
-        return Timetable.DATE_TIME_FORMATTER.parse(s, LocalDate::from);
+    private static LocalDate toLocalDate(String s) throws ParseException {
+        return LocalDate.parse(s, DateTimeFormatter.BASIC_ISO_DATE);
     }
 
-    private static LocalDateTime toLocalDateTime(LocalDate date, String time) {
-        int timeInt = Integer.parseInt(time);
-        return date.atTime(timeInt / 100, timeInt % 100);
+    private static LocalDateTime toLocalDateTime(LocalDate date, int time) {
+        return date.atTime(time / 100, time % 100);
     }
 
     public enum CellState {

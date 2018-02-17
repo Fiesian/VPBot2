@@ -13,7 +13,6 @@ import java.util.Optional;
 public class UntisIOHelper {
     private static final String HOST = "mese.webuntis.com";
     private static final String SCHOOLNAME = "_a3NoLXN0LiBhbnNnYXI=";
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("YYYY-MM-DD");
 
     public UntisIOHelper(){
         this.getTimetableRaw(123, Optional.empty());
@@ -80,6 +79,6 @@ public class UntisIOHelper {
                 d = d.plusDays(2);
                 break;
         }
-        return UntisIOHelper.DATE_TIME_FORMATTER.format(d);
+        return DateTimeFormatter.ISO_LOCAL_DATE.format(d);
     }
 }
