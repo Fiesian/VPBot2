@@ -51,7 +51,7 @@ public class Timetable {
         return result;
     }
 
-    public static Timetable ofRawJSON(String raw, Optional<ExceptionHandler> exceptionHandler) {
+    public static Timetable ofRawJSON(String raw, Optional<ExceptionHandler> exceptionHandler, Integer classID) {
 
         Boolean[] emptyDays = new Boolean[]{true, true, true, true, true};
         ArrayList<Period> periods = new ArrayList<>();
@@ -78,7 +78,7 @@ public class Timetable {
                     .getJSONObject("result")
                     .getJSONObject("data")
                     .getJSONObject("elementPeriods")
-                    .getJSONArray("123");
+                    .getJSONArray(classID.toString());
 
             for (Integer i = 0; i < elementPeriods.length(); i++) {
                 JSONObject period = elementPeriods.getJSONObject(i);

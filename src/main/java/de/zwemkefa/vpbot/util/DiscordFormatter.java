@@ -41,7 +41,7 @@ public class DiscordFormatter {
         while (periods.hasNext()) {
             Timetable.Period p = periods.next();
             int d = p.getStart().getDayOfWeek().getValue();
-            while (loopDay < d) {
+            while (loopDay < d && loopDay < 4) {
                 if (b != null) {
                     b.setLength(b.length() - 1);
                     e.appendField(DAY_NAMES[loopDay - 1], b.toString(), false);
@@ -55,8 +55,12 @@ public class DiscordFormatter {
             }
             if (b == null) {
                 b = new StringBuilder();
+            } else if (b.length() > 950) {
+                b.setLength(b.length() - 1);
+                e.appendField(DAY_NAMES[loopDay - 1], b.toString(), true);
+                b = new StringBuilder();
             }
-            String sub = t.getSubjectNames().getOrDefault(p.getSubject(), "Etwas ");
+            String sub = t.getSubjectNames().getOrDefault(p.getSubject(), "Etwas");
             switch (p.getCellState()) {
                 case CANCEL:
                     b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" ausfallen.\n");
