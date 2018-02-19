@@ -34,6 +34,7 @@ public class ChannelConfig {
     public static class Entry {
         private long id;
         private String className;
+        private long checkTime = 600l;
 
         public Entry() {
         }
@@ -51,6 +52,10 @@ public class ChannelConfig {
             return className;
         }
 
+        public long getCheckTime() {
+            return checkTime;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -59,6 +64,7 @@ public class ChannelConfig {
             Entry entry = (Entry) o;
 
             if (id != entry.id) return false;
+            if (checkTime != entry.checkTime) return false;
             return className != null ? className.equals(entry.className) : entry.className == null;
         }
 
@@ -66,6 +72,7 @@ public class ChannelConfig {
         public int hashCode() {
             int result = (int) (id ^ (id >>> 32));
             result = 31 * result + (className != null ? className.hashCode() : 0);
+            result = 31 * result + (int) (checkTime ^ (checkTime >>> 32));
             return result;
         }
     }
