@@ -33,7 +33,7 @@ public class VPBot {
 
     private static final Path CONFIG_PATH = Paths.get("config.json");
 
-    private static final String VERSION = "1.0.0";
+    private static final String VERSION = "2.0.0";
 
     public VPBot() {
         VPBot.instance = this;
@@ -75,7 +75,7 @@ public class VPBot {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
+        client.changePlayingText("VPBot v" + VERSION);
         this.channelConfig.getChannels().forEach(e -> new TimetableWatcherThread(e));
     }
 
