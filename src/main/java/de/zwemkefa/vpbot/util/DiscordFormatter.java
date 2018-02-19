@@ -23,7 +23,7 @@ public class DiscordFormatter {
         e.withTitle("Vertretungsplan " + className);
         if (t.getPeriods().isEmpty()) {
             if (!emptyDayList.contains(Boolean.TRUE)) {
-                e.withDescription("Der  Vertretungsplan ist leer.");
+                e.withDescription("Der Vertretungsplan ist leer.");
                 e.withColor(Color.GREEN);
                 return e.build();
             } else if (!emptyDayList.contains(Boolean.FALSE)) {

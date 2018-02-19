@@ -51,7 +51,7 @@ public class Timetable {
         return result;
     }
 
-    public static Timetable ofRawJSON(String raw, Optional<ExceptionHandler> exceptionHandler, Integer classID) {
+    public static Timetable ofRawJSON(String raw, ExceptionHandler exceptionHandler, Integer classID) {
 
         Boolean[] emptyDays = new Boolean[]{true, true, true, true, true};
         ArrayList<Period> periods = new ArrayList<>();
@@ -104,7 +104,7 @@ public class Timetable {
         } catch (Exception e) {
             e.printStackTrace();
 
-            exceptionHandler.ifPresent(exceptionHandler1 -> exceptionHandler1.handleException(e));
+            exceptionHandler.handleException(e);
 
             return null;
         }

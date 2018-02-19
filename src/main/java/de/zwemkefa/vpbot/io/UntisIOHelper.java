@@ -8,19 +8,14 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 public class UntisIOHelper {
     private static final String HOST = "mese.webuntis.com";
     private static final String SCHOOLNAME = "_a3NoLXN0LiBhbnNnYXI=";
 
-    public UntisIOHelper(){
-        this.getTimetableRaw(123, Optional.empty());
-    }
-
-    public String getTimetableRaw(int classID, Optional<ExceptionHandler> exceptionHandler){
+    public static String getTimetableRaw(int classID, ExceptionHandler exceptionHandler) {
         try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/data?elementType=1&elementId="+ classID + "&date=" + this.getDateString() + "&formatId=1").openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/data?elementType=1&elementId=" + classID + "&date=" + UntisIOHelper.getDateString() + "&formatId=1").openConnection();
             con.setRequestProperty("Cookie", "schoolname=" + UntisIOHelper.SCHOOLNAME);
             con.connect();
             StringBuilder answer = new StringBuilder();
@@ -33,16 +28,16 @@ public class UntisIOHelper {
 
             return answer.toString();
         } catch (Exception e){
-            exceptionHandler.ifPresent(exceptionHandler1 -> exceptionHandler1.handleException(e));
+            exceptionHandler.handleException(e);
             e.printStackTrace();
         }
 
         return null;
     }
 
-    public String getClassesRaw(Optional<ExceptionHandler> exceptionHandler){
+    public static String getClassesRaw(ExceptionHandler exceptionHandler) {
         try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/pageconfig?type=1&id=123&date=" + this.getDateString() + "&formatId=1").openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/pageconfig?type=1&id=123&date=" + UntisIOHelper.getDateString() + "&formatId=1").openConnection();
             con.setRequestProperty("Cookie", "schoolname=" + UntisIOHelper.SCHOOLNAME);
             con.connect();
             StringBuilder answer = new StringBuilder();
@@ -55,14 +50,14 @@ public class UntisIOHelper {
 
             return answer.toString();
         } catch (Exception e){
-            exceptionHandler.ifPresent(exceptionHandler1 -> exceptionHandler1.handleException(e));
+            exceptionHandler.handleException(e);
             e.printStackTrace();
         }
 
         return null;
     }
 
-    private String getDateString(){
+    private static String getDateString() {
         LocalDateTime d = LocalDateTime.now();
         switch(d.getDayOfWeek()){
             case FRIDAY:

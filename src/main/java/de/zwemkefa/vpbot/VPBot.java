@@ -1,8 +1,7 @@
 package de.zwemkefa.vpbot;
 
-import de.zwemkefa.vpbot.io.UntisIOHelper;
-import de.zwemkefa.vpbot.timetable.Timetable;
-import de.zwemkefa.vpbot.util.DiscordFormatter;
+import de.zwemkefa.vpbot.cmd.CommandHandler;
+import de.zwemkefa.vpbot.io.UntisClassResolver;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
@@ -10,32 +9,32 @@ import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
-import java.util.Optional;
-
 public class VPBot {
 
     private static VPBot instance;
 
     private IDiscordClient client;
 
-    private UntisIOHelper ioHelper;
+    private UntisClassResolver classResolver;
 
     public VPBot() {
 
         this.client = new ClientBuilder()
                 .withToken("Mzk3NDUzMjYxODM1MDc1NTg2.DWgahw.mEIyoZXS6w_EXBLMKgJCFH8UyE4")
                 .build();
+
+        client.getDispatcher().registerListener(new CommandHandler());
         client.login();
 
-        this.ioHelper = new UntisIOHelper();
-
-        try {
-            Thread.sleep(2500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        while (!client.isLoggedIn()) {
+            Thread.yield();
         }
-        Timetable t = Timetable.ofRawJSON(ioHelper.getTimetableRaw(123, Optional.of(Exception::printStackTrace)), Optional.of(Exception::printStackTrace));
-        this.sendMessage(client.getChannelByID(260177015888412673l), DiscordFormatter.formatTimetableMessage(t, "10c"));
+
+        //ExceptionHandler defaultExceptionHandler = (e) -> this.sendMessage(client.getUserByID(226978525121478656l).getOrCreatePMChannel(), DiscordFormatter.formatErrorMessage(e));
+
+        this.classResolver = new UntisClassResolver();
+
+
     }
 
     public static VPBot getInstance() {
@@ -66,5 +65,9 @@ public class VPBot {
                 e.printStackTrace();
             }
         });
+    }
+
+    public UntisClassResolver getClassResolver() {
+        return classResolver;
     }
 }
