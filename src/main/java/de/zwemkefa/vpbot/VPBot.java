@@ -1,6 +1,8 @@
 package de.zwemkefa.vpbot;
 
+import com.google.gson.Gson;
 import de.zwemkefa.vpbot.cmd.CommandHandler;
+import de.zwemkefa.vpbot.config.ChannelConfig;
 import de.zwemkefa.vpbot.io.UntisClassResolver;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
@@ -8,6 +10,13 @@ import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class VPBot {
 
@@ -17,10 +26,35 @@ public class VPBot {
 
     private UntisClassResolver classResolver;
 
-    public VPBot() {
+    private Gson gson;
 
+    private ChannelConfig channelConfig;
+
+    private static final Path CONFIG_PATH = Paths.get("config.json");
+
+    public VPBot() {
+        this.gson = new Gson();
+
+        if (!Files.exists(CONFIG_PATH)) {
+            this.channelConfig = new ChannelConfig();
+            this.saveConfig();
+        } else {
+            try {
+                byte[] config = Files.readAllBytes(CONFIG_PATH);
+                this.channelConfig = this.gson.fromJson(new String(config, Charset.defaultCharset()), ChannelConfig.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+                this.channelConfig = new ChannelConfig();
+            }
+        }
+
+        if (this.channelConfig.getToken() == null || this.channelConfig.getToken().equals("")) {
+            System.err.println("Please enter your discord token in config.json");
+            System.err.println("Shutting down.");
+            return;
+        }
         this.client = new ClientBuilder()
-                .withToken("Mzk3NDUzMjYxODM1MDc1NTg2.DWgahw.mEIyoZXS6w_EXBLMKgJCFH8UyE4")
+                .withToken(this.channelConfig.getToken())
                 .build();
 
         client.getDispatcher().registerListener(new CommandHandler());
@@ -30,11 +64,7 @@ public class VPBot {
             Thread.yield();
         }
 
-        //ExceptionHandler defaultExceptionHandler = (e) -> this.sendMessage(client.getUserByID(226978525121478656l).getOrCreatePMChannel(), DiscordFormatter.formatErrorMessage(e));
-
         this.classResolver = new UntisClassResolver();
-
-
     }
 
     public static VPBot getInstance() {
@@ -67,7 +97,19 @@ public class VPBot {
         });
     }
 
+    public void saveConfig() {
+        try {
+            Files.write(CONFIG_PATH, this.gson.toJson(this.channelConfig).getBytes(Charset.defaultCharset()), new OpenOption[]{});
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public UntisClassResolver getClassResolver() {
         return classResolver;
+    }
+
+    public Gson getGson() {
+        return gson;
     }
 }
