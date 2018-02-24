@@ -15,7 +15,6 @@ import sx.blah.discord.util.RequestBuffer;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -33,7 +32,7 @@ public class VPBot {
 
     private static final Path CONFIG_PATH = Paths.get("config.json");
 
-    private static final String VERSION = "2.0.0";
+    private static final String VERSION = "2.0.1";
 
     public VPBot() {
         VPBot.instance = this;
@@ -115,7 +114,7 @@ public class VPBot {
 
     public void saveConfig() {
         try {
-            Files.write(CONFIG_PATH, this.gson.toJson(this.channelConfig).getBytes(Charset.defaultCharset()), new OpenOption[]{});
+            Files.write(CONFIG_PATH, this.gson.toJson(this.channelConfig).getBytes(Charset.defaultCharset()));
         } catch (IOException e) {
             e.printStackTrace();
         }

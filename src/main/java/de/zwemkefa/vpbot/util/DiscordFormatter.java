@@ -40,7 +40,7 @@ public class DiscordFormatter {
         int loopDay = -1;
         while (periods.hasNext()) {
             Timetable.Period p = periods.next();
-            int d = p.getStart().getDayOfWeek().getValue();
+            int d = p.getStart().getDayOfWeek().getValue() - 1;
             while (loopDay < d && loopDay < 4) {
                 if (b != null) {
                     b.setLength(b.length() - 1);
@@ -88,7 +88,7 @@ public class DiscordFormatter {
         }
         if (b != null) {
             b.setLength(b.length() - 1);
-            e.appendField(DAY_NAMES[loopDay - 1], b.toString(), false);
+            e.appendField(DAY_NAMES[loopDay], b.toString(), false);
             //b = null;
         }
         return e.build();
