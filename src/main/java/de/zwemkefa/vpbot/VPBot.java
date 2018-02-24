@@ -32,7 +32,7 @@ public class VPBot {
 
     private static final Path CONFIG_PATH = Paths.get("config.json");
 
-    private static final String VERSION = "2.0.1";
+    private static final String VERSION = "2.0.2";
 
     public VPBot() {
         VPBot.instance = this;

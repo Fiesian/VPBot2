@@ -37,7 +37,7 @@ public class TimetableWatcherThread extends Thread {
     public void run() {
         while (true) {
             Timetable t = Timetable.ofRawJSON(UntisIOHelper.getTimetableRaw(this.classId, this.e), this.e, classId);
-            if (!t.equals(lastCheck)) {
+            if (t != null && !t.equals(lastCheck)) {
                 this.lastCheck = t;
                 RequestBuffer.request(() -> {
                     try {
@@ -51,14 +51,20 @@ public class TimetableWatcherThread extends Thread {
                     }
                 });
             } else {
-                RequestBuffer.request(() -> {
-                    try {
-                        this.lastMessage.edit(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName()));
-                    } catch (DiscordException e) {
-                        System.err.println("Could not send message: ");
-                        e.printStackTrace();
-                    }
-                });
+                if (this.lastMessage == null) {
+                    System.err.println("null @ TTW#(this.lastMessage == null). Won't edit lastMessage");
+                } else if (t == null) {
+                    System.err.println("null @ TTW#(t == null). Won't edit lastMessage");
+                } else {
+                    RequestBuffer.request(() -> {
+                        try {
+                            this.lastMessage.edit(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName()));
+                        } catch (DiscordException e) {
+                            System.err.println("Could not send message: ");
+                            e.printStackTrace();
+                        }
+                    });
+                }
             }
             try {
                 Thread.sleep(this.config.getCheckTime() * 1000);
