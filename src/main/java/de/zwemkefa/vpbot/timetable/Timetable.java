@@ -41,13 +41,17 @@ public class Timetable {
 
         Timetable timetable = (Timetable) o;
 
-        return Arrays.equals(emptyDays, timetable.emptyDays) && (periods != null ? periods.equals(timetable.periods) : timetable.periods == null);
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        if (!Arrays.equals(emptyDays, timetable.emptyDays)) return false;
+        if (periods != null ? !periods.equals(timetable.periods) : timetable.periods != null) return false;
+        return subjectNames != null ? subjectNames.equals(timetable.subjectNames) : timetable.subjectNames == null;
     }
 
     @Override
     public int hashCode() {
         int result = Arrays.hashCode(emptyDays);
         result = 31 * result + (periods != null ? periods.hashCode() : 0);
+        result = 31 * result + (subjectNames != null ? subjectNames.hashCode() : 0);
         return result;
     }
 

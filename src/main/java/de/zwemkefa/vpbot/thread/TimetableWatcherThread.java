@@ -41,7 +41,9 @@ public class TimetableWatcherThread extends Thread {
                 this.lastCheck = t;
                 RequestBuffer.request(() -> {
                     try {
-                        this.lastMessage.delete();
+                        if (this.lastMessage != null) {
+                            this.lastMessage.delete();
+                        }
                         this.lastMessage = channel.sendMessage(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName()));
                     } catch (DiscordException e) {
                         System.err.println("Could not send message: ");
