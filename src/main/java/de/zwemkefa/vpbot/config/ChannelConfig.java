@@ -60,6 +60,8 @@ public class ChannelConfig {
         private long id;
         private String className;
         private long checkTime = 600l;
+        private long lastMessageId = 0;
+        private int lastMessageHash = 0;
 
         public Entry() {
         }
@@ -79,6 +81,22 @@ public class ChannelConfig {
 
         public long getCheckTime() {
             return checkTime;
+        }
+
+        public long getLastMessageId() {
+            return lastMessageId;
+        }
+
+        public void setLastMessageId(long lastMessageId) {
+            this.lastMessageId = lastMessageId;
+        }
+
+        public int getLastMessageHash() {
+            return lastMessageHash;
+        }
+
+        public void setLastMessageHash(int lastMessageHash) {
+            this.lastMessageHash = lastMessageHash;
         }
 
         @Override

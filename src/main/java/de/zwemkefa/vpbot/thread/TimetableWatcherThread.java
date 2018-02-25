@@ -26,6 +26,10 @@ public class TimetableWatcherThread extends Thread {
         this.e = (ex) -> VPBot.getInstance().sendMessage(this.channel, DiscordFormatter.formatErrorMessage(ex));
 
         this.classId = VPBot.getInstance().getClassResolver().resolve(this.config.getClassName(), e);
+
+        if (config.getLastMessageId() != 0)
+            this.lastMessage = channel.getMessageByID(config.getLastMessageId());
+
         if (this.classId == 0) {
             return;
         }
@@ -37,7 +41,7 @@ public class TimetableWatcherThread extends Thread {
     public void run() {
         while (true) {
             Timetable t = Timetable.ofRawJSON(UntisIOHelper.getTimetableRaw(this.classId, this.e), this.e, classId);
-            if (t != null && !t.equals(lastCheck)) {
+            if (t != null && (!t.equals(lastCheck) || (this.lastCheck == null && this.config.getLastMessageHash() != t.hashCode()))) {
                 this.lastCheck = t;
                 RequestBuffer.request(() -> {
                     try {
@@ -45,6 +49,9 @@ public class TimetableWatcherThread extends Thread {
                             this.lastMessage.delete();
                         }
                         this.lastMessage = channel.sendMessage(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName()));
+                        this.config.setLastMessageId(this.lastMessage.getLongID());
+                        this.config.setLastMessageHash(t.hashCode());
+                        VPBot.getInstance().saveConfig();
                     } catch (DiscordException e) {
                         System.err.println("Could not send message: ");
                         e.printStackTrace();
