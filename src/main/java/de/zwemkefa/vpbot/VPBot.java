@@ -32,10 +32,13 @@ public class VPBot {
 
     private static final Path CONFIG_PATH = Paths.get("config.json");
 
-    private static final String VERSION = "2.0.3";
+    public static final int VERSION_MAJOR = 2;
+    public static final int VERSION_MINOR = 1;
+    public static final int VERSION_PATCH = 0;
 
     public VPBot() {
         VPBot.instance = this;
+        System.out.println("Starting VPBot v" + VPBot.getVersion());
         this.gson = new Gson();
 
         if (!Files.exists(CONFIG_PATH)) {
@@ -51,8 +54,7 @@ public class VPBot {
             }
         }
 
-        if (this.channelConfig.getToken() == null || this.channelConfig.getToken().equals("")) {
-            System.err.println("Please enter your discord token in config.json");
+        if (!this.channelConfig.init()) {
             System.err.println("Shutting down.");
             return;
         }
@@ -74,7 +76,7 @@ public class VPBot {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        client.changePlayingText("VPBot v" + VERSION);
+        client.changePlayingText("VPBot v" + VPBot.getVersion());
         this.channelConfig.getChannels().forEach(e -> new TimetableWatcherThread(e));
     }
 
@@ -129,6 +131,10 @@ public class VPBot {
     }
 
     public static String getVersion() {
-        return VERSION;
+        return VERSION_MAJOR + "." + VERSION_MINOR + (VERSION_PATCH == 0 ? "" : "." + VERSION_PATCH);
+    }
+
+    public static int compareVersion(int major, int minor, int patch) {
+        return Integer.compare(VPBot.VERSION_MAJOR, major) == 0 ? (Integer.compare(VPBot.VERSION_MINOR, minor) == 0 ? Integer.compare(VPBot.VERSION_PATCH, patch) : Integer.compare(VPBot.VERSION_MAJOR, minor)) : Integer.compare(VPBot.VERSION_MAJOR, major);
     }
 }

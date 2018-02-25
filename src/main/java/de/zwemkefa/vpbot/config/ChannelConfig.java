@@ -1,5 +1,7 @@
 package de.zwemkefa.vpbot.config;
 
+import de.zwemkefa.vpbot.VPBot;
+
 import java.util.HashSet;
 
 public class ChannelConfig {
@@ -14,6 +16,29 @@ public class ChannelConfig {
 
     public String getToken() {
         return token;
+    }
+
+    private int version_major = 0;
+    private int version_minor = 0;
+    private int version_patch = 0;
+
+    public boolean init() {
+        if (this.token == null || this.token == "") {
+            System.err.println("Please enter your discord token in config.json");
+            return false;
+        }
+        int comp = VPBot.compareVersion(this.version_major, this.version_minor, this.version_patch);
+        if (comp < 0) {
+            System.err.println("VPBot v" + VPBot.getVersion() + " is older than config.json (v" + version_major + "." + version_minor + (version_patch == 0 ? "" : "." + version_patch) + ")");
+            return false;
+        } else if (comp > 0) {
+            System.out.println("Updating config.json to version " + VPBot.getVersion() + " (old version: " + version_major + "." + version_minor + (version_patch == 0 ? "" : "." + version_patch) + ")");
+            this.version_major = VPBot.VERSION_MAJOR;
+            this.version_minor = VPBot.VERSION_MINOR;
+            this.version_patch = VPBot.VERSION_PATCH;
+            VPBot.getInstance().saveConfig();
+        }
+        return true;
     }
 
     @Override
