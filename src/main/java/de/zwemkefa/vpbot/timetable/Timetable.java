@@ -72,7 +72,7 @@ public class Timetable {
             for (Integer i = 0; i < subjects.length(); i++) {
                 JSONObject subject = subjects.getJSONObject(i);
                 if (subject.getInt("type") == 3) {
-                    subjectNames.put(subject.getInt("id"), subject.getString("name"));
+                    subjectNames.put(subject.getInt("id"), subject.getString("longName"));
                 }
             }
 
