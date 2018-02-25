@@ -44,10 +44,10 @@ public class DiscordFormatter {
             while (loopDay < d && loopDay < 4) {
                 if (b != null) {
                     b.setLength(b.length() - 1);
-                    e.appendField(DAY_NAMES[loopDay - 1], b.toString(), false);
+                    e.appendField(DAY_NAMES[loopDay], b.toString(), false);
                     b = null;
                 }
-                if (emptyDayList.get(++loopDay)) {
+                if (emptyDayList.get(++loopDay)) {  //Change day here
                     b = new StringBuilder();
                     b.append("Am ").append(DAY_NAMES[loopDay - 1]).append(" findet kein Unterricht statt.\n");
                 }
@@ -60,7 +60,7 @@ public class DiscordFormatter {
                 e.appendField(DAY_NAMES[loopDay - 1], b.toString(), true);
                 b = new StringBuilder();
             }
-            String sub = t.getSubjectNames().getOrDefault(p.getSubject(), "Etwas");
+            String sub = t.getSubjectNames().getOrDefault(p.getSubject(), "Eine Veranstaltung");
             switch (p.getCellState()) {
                 case CANCEL:
                     b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" ausfallen.\n");
