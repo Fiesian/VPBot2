@@ -50,9 +50,7 @@ public class Timetable {
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         if (!Arrays.equals(emptyDays, timetable.emptyDays)) return false;
         if (periods != null ? !periods.equals(timetable.periods) : timetable.periods != null) return false;
-        if (subjectNames != null ? !subjectNames.equals(timetable.subjectNames) : timetable.subjectNames != null)
-            return false;
-        return messagesOfDay != null ? messagesOfDay.equals(timetable.messagesOfDay) : timetable.messagesOfDay == null;
+        return subjectNames != null ? subjectNames.equals(timetable.subjectNames) : timetable.subjectNames == null;
     }
 
     @Override
@@ -60,7 +58,6 @@ public class Timetable {
         int result = Arrays.hashCode(emptyDays);
         result = 31 * result + (periods != null ? periods.hashCode() : 0);
         result = 31 * result + (subjectNames != null ? subjectNames.hashCode() : 0);
-        result = 31 * result + (messagesOfDay != null ? messagesOfDay.hashCode() : 0);
         return result;
     }
 
