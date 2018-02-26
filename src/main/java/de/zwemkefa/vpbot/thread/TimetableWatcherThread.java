@@ -48,7 +48,7 @@ public class TimetableWatcherThread extends Thread {
                         if (this.lastMessage != null) {
                             this.lastMessage.delete();
                         }
-                        this.lastMessage = channel.sendMessage(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName()));
+                        this.lastMessage = channel.sendMessage(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true));
                         this.config.setLastMessageId(this.lastMessage.getLongID());
                         this.config.setLastMessageHash(t.hashCode());
                         VPBot.getInstance().saveConfig();
@@ -65,7 +65,7 @@ public class TimetableWatcherThread extends Thread {
                 } else {
                     RequestBuffer.request(() -> {
                         try {
-                            this.lastMessage.edit(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName()));
+                            this.lastMessage.edit(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true));
                         } catch (DiscordException e) {
                             System.err.println("Could not send message: ");
                             e.printStackTrace();

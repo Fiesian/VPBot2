@@ -16,12 +16,12 @@ public class DiscordFormatter {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d.M.u");
 
-    public static EmbedObject formatTimetableMessage(Timetable t, String className) {
+    public static EmbedObject formatTimetableMessage(Timetable t, String className, boolean filterByTime) {
         List<Boolean> emptyDayList = Arrays.asList(t.getEmptyDays());
         EmbedBuilder e = new EmbedBuilder();
         e.withFooterText("Aktualisiert am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()));
         e.withTitle("Vertretungsplan " + className);
-        if (t.getPeriods().isEmpty()) {
+        if (filterByTime ? t.getPeriods().stream().filter(p -> p.getEnd().isAfter(LocalDateTime.now())).count() == 0 : t.getPeriods().isEmpty()) {
             if (!emptyDayList.contains(Boolean.TRUE)) {
                 e.withDescription("Der Vertretungsplan ist leer.");
                 e.withColor(Color.GREEN);
@@ -34,7 +34,11 @@ public class DiscordFormatter {
         }
         e.withColor(Color.YELLOW);
         //Stream<Timetable.Period> periods = t.getPeriods().stream().sorted(Comparator.comparing(Timetable.Period::getStart));
-        Iterator<Timetable.Period> periods = t.getPeriods().iterator();
+        Iterator<Timetable.Period> periods;
+        if (filterByTime)
+            periods = t.getPeriods().stream().filter(p -> p.getEnd().isAfter(LocalDateTime.now())).iterator();
+        else
+            periods = t.getPeriods().iterator();
 
         StringBuilder b = null;
         int loopDay = -1;
