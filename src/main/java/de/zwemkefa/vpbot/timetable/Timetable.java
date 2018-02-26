@@ -15,11 +15,13 @@ public class Timetable {
     private Boolean[] emptyDays;
     private ArrayList<Period> periods;
     private Map<Integer, String> subjectNames;
+    private ArrayList<String> messagesOfDay;
 
-    private Timetable(Boolean[] emptyDays, ArrayList<Period> periods, Map<Integer, String> subjectNames) {
+    private Timetable(Boolean[] emptyDays, ArrayList<Period> periods, Map<Integer, String> subjectNames, ArrayList<String> messagesOfDay) {
         this.emptyDays = emptyDays;
         this.periods = periods;
         this.subjectNames = subjectNames;
+        this.messagesOfDay = messagesOfDay;
     }
 
     public Boolean[] getEmptyDays() {
@@ -34,6 +36,10 @@ public class Timetable {
         return subjectNames;
     }
 
+    public ArrayList<String> getMessagesOfDay() {
+        return messagesOfDay;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -44,7 +50,9 @@ public class Timetable {
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         if (!Arrays.equals(emptyDays, timetable.emptyDays)) return false;
         if (periods != null ? !periods.equals(timetable.periods) : timetable.periods != null) return false;
-        return subjectNames != null ? subjectNames.equals(timetable.subjectNames) : timetable.subjectNames == null;
+        if (subjectNames != null ? !subjectNames.equals(timetable.subjectNames) : timetable.subjectNames != null)
+            return false;
+        return messagesOfDay != null ? messagesOfDay.equals(timetable.messagesOfDay) : timetable.messagesOfDay == null;
     }
 
     @Override
@@ -52,16 +60,27 @@ public class Timetable {
         int result = Arrays.hashCode(emptyDays);
         result = 31 * result + (periods != null ? periods.hashCode() : 0);
         result = 31 * result + (subjectNames != null ? subjectNames.hashCode() : 0);
+        result = 31 * result + (messagesOfDay != null ? messagesOfDay.hashCode() : 0);
         return result;
     }
 
-    public static Timetable ofRawJSON(String raw, ExceptionHandler exceptionHandler, Integer classID) {
+    public static Timetable ofRawJSON(String raw, String newsRaw, ExceptionHandler exceptionHandler, Integer classID) {
 
         Boolean[] emptyDays = new Boolean[]{true, true, true, true, true};
         ArrayList<Period> periods = new ArrayList<>();
         HashMap<Integer, String> subjectNames = new HashMap<>();
+        ArrayList<String> messagesOfDay = new ArrayList<>();
 
         try {
+            //News
+            JSONArray news = new JSONObject(newsRaw)
+                    .getJSONObject("data")
+                    .getJSONArray("messagesOfDay");
+
+            for (Integer n = 0; n < news.length(); n++) {
+                messagesOfDay.add(news.getJSONObject(n).getString("text"));
+            }
+
             //Subject names
             JSONArray subjects = new JSONObject(raw)
                     .getJSONObject("data")
@@ -113,7 +132,7 @@ public class Timetable {
             return null;
         }
         periods.sort(Comparator.comparing(Period::getStart));
-        return new Timetable(emptyDays, periods, subjectNames);
+        return new Timetable(emptyDays, periods, subjectNames, messagesOfDay);
     }
 
     private static LocalDate toLocalDate(String s) throws ParseException {

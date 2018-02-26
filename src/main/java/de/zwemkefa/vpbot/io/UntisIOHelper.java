@@ -15,7 +15,7 @@ public class UntisIOHelper {
 
     public static String getTimetableRaw(int classID, ExceptionHandler exceptionHandler) {
         try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/data?elementType=1&elementId=" + classID + "&date=" + UntisIOHelper.getDateString() + "&formatId=1").openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/data?elementType=1&elementId=" + classID + "&date=" + UntisIOHelper.getDateString(true) + "&formatId=1").openConnection();
             con.setRequestProperty("Cookie", "schoolname=" + UntisIOHelper.SCHOOLNAME);
             con.connect();
             StringBuilder answer = new StringBuilder();
@@ -37,7 +37,7 @@ public class UntisIOHelper {
 
     public static String getClassesRaw(ExceptionHandler exceptionHandler) {
         try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/pageconfig?type=1&id=123&date=" + UntisIOHelper.getDateString() + "&formatId=1").openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/pageconfig?type=1&id=123&date=" + UntisIOHelper.getDateString(true) + "&formatId=1").openConnection();
             con.setRequestProperty("Cookie", "schoolname=" + UntisIOHelper.SCHOOLNAME);
             con.connect();
             StringBuilder answer = new StringBuilder();
@@ -57,7 +57,29 @@ public class UntisIOHelper {
         return null;
     }
 
-    private static String getDateString() {
+    public static String getNewsRaw(ExceptionHandler exceptionHandler) {
+        try {
+            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/news/newsWidgetData?date=" + UntisIOHelper.getDateString(false)).openConnection();
+            con.setRequestProperty("Cookie", "schoolname=" + UntisIOHelper.SCHOOLNAME);
+            con.connect();
+            StringBuilder answer = new StringBuilder();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                answer.append(line);
+            }
+            reader.close();
+
+            return answer.toString();
+        } catch (Exception e) {
+            exceptionHandler.handleException(e);
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private static String getDateString(boolean includeHyphen) {
         LocalDateTime d = LocalDateTime.now();
         switch(d.getDayOfWeek()){
             case FRIDAY:
@@ -70,6 +92,7 @@ public class UntisIOHelper {
                 d = d.plusDays(2);
                 break;
         }
-        return DateTimeFormatter.ISO_LOCAL_DATE.format(d);
+
+        return includeHyphen ? DateTimeFormatter.ISO_LOCAL_DATE.format(d) : DateTimeFormatter.BASIC_ISO_DATE.format(d);
     }
 }

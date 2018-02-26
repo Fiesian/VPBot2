@@ -25,10 +25,30 @@ public class DiscordFormatter {
             if (!emptyDayList.contains(Boolean.TRUE)) {
                 e.withDescription("Der Vertretungsplan ist leer.");
                 e.withColor(Color.GREEN);
+                t.getMessagesOfDay().forEach(s -> e.appendField("**Nachricht**", s.replaceAll("<b>", "**")
+                        .replaceAll("</b>", "**")
+                        .replaceAll("<i>", "*")
+                        .replaceAll("</i>", "*")
+                        .replaceAll("<u>", "__")
+                        .replaceAll("</u>", "__")
+                        .replaceAll("<del>", "~~")
+                        .replaceAll("</del>", "~~")
+                        .replaceAll("<br>", "\n")
+                        .replaceAll("</br>", "\n"), false));
                 return e.build();
             } else if (!emptyDayList.contains(Boolean.FALSE)) {
                 e.withDescription("Es findet kein Unterricht statt.");
                 e.withColor(Color.YELLOW);
+                t.getMessagesOfDay().forEach(s -> e.appendField("**Nachricht**", s.replaceAll("<b>", "**")
+                        .replaceAll("</b>", "**")
+                        .replaceAll("<i>", "*")
+                        .replaceAll("</i>", "*")
+                        .replaceAll("<u>", "__")
+                        .replaceAll("</u>", "__")
+                        .replaceAll("<del>", "~~")
+                        .replaceAll("</del>", "~~")
+                        .replaceAll("<br>", "\n")
+                        .replaceAll("</br>", "\n"), false));
                 return e.build();
             }
         }
@@ -95,6 +115,18 @@ public class DiscordFormatter {
             e.appendField(DAY_NAMES[loopDay], b.toString(), false);
             //b = null;
         }
+
+        t.getMessagesOfDay().forEach(s -> e.appendField("--Nachricht--", s.replaceAll("<b>", "**")
+                .replaceAll("</b>", "**")
+                .replaceAll("<i>", "*")
+                .replaceAll("</i>", "*")
+                .replaceAll("<u>", "__")
+                .replaceAll("</u>", "__")
+                .replaceAll("<del>", "~~")
+                .replaceAll("</del>", "~~")
+                .replaceAll("<br>", "\n")
+                .replaceAll("</br>", "\n"), false));
+
         return e.build();
     }
 

@@ -32,7 +32,7 @@ public class CommandHandler {
                             throw new IllegalArgumentException("Keine Klasse angegeben. \n\"vp <klasse>\"\n\"klassen\" zeigt die Klassen an.");
                         }
                         int classID = VPBot.getInstance().getClassResolver().resolve(cmd[1], exceptionHandler);
-                        Timetable t = Timetable.ofRawJSON(UntisIOHelper.getTimetableRaw(classID, exceptionHandler), exceptionHandler, classID);
+                        Timetable t = Timetable.ofRawJSON(UntisIOHelper.getTimetableRaw(classID, exceptionHandler), UntisIOHelper.getNewsRaw(exceptionHandler), exceptionHandler, classID);
                         VPBot.getInstance().sendMessage(e.getChannel(), DiscordFormatter.formatTimetableMessage(t, cmd[1], false));
                         break;
 
