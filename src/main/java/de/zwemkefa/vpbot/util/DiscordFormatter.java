@@ -73,7 +73,7 @@ public class DiscordFormatter {
                 }
                 if (emptyDayList.get(++loopDay)) {  //Change day here
                     b = new StringBuilder();
-                    b.append("Am ").append(DAY_NAMES[loopDay - 1]).append(" findet kein Unterricht statt.\n");
+                    b.append("Am ").append(DAY_NAMES[loopDay]).append(" findet kein Unterricht statt.\n");
                 }
 
             }
