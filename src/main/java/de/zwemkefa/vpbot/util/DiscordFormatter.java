@@ -38,7 +38,7 @@ public class DiscordFormatter {
                 return e.build();
             } else if (!emptyDayList.contains(Boolean.FALSE)) {
                 e.withDescription("Es findet kein Unterricht statt.");
-                e.withColor(Color.YELLOW);
+                e.withColor(Color.GREEN);
                 t.getMessagesOfDay().forEach(s -> e.appendField("**Nachricht**", s.replaceAll("<b>", "**")
                         .replaceAll("</b>", "**")
                         .replaceAll("<i>", "*")
