@@ -88,7 +88,7 @@ public class DiscordFormatter {
 
             String periodName = VPBot.getInstance().getPeriodResolver().getPeriod(p.getStart(), p.getEnd());
             if (periodName == null)
-                b.append(TIME_FORMATTER.format(p.getStart())).append(" bis ").append(TIME_FORMATTER.format(p.getEnd())).append(":");
+                b.append(TIME_FORMATTER.format(p.getStart())).append(" bis ").append(TIME_FORMATTER.format(p.getEnd())).append(": ");
             else
                 b.append(periodName).append(". Std.: ");
 

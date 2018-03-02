@@ -114,7 +114,7 @@ public class UntisIOHelper {
     }
 
     private static String getDateString(boolean includeHyphen) {
-        LocalDateTime d = LocalDateTime.now().minusWeeks(1);
+        LocalDateTime d = LocalDateTime.now();
         switch(d.getDayOfWeek()){
             case FRIDAY:
                 if(d.getHour() > 14)
