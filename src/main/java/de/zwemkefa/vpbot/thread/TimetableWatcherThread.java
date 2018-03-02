@@ -40,6 +40,7 @@ public class TimetableWatcherThread extends Thread {
     @Override
     public void run() {
         while (true) {
+            this.channel.setTypingStatus(true);
             Timetable t = Timetable.ofRawJSON(UntisIOHelper.getTimetableRaw(this.classId, this.e), UntisIOHelper.getNewsRaw(this.e), this.e, classId);
             if (t != null && (!t.equals(lastCheck) || (this.lastCheck == null && this.config.getLastMessageHash() != t.hashCode()))) {
                 this.lastCheck = t;
@@ -73,6 +74,7 @@ public class TimetableWatcherThread extends Thread {
                     });
                 }
             }
+            this.channel.setTypingStatus(false);
             try {
                 Thread.sleep(this.config.getCheckTime() * 1000);
             } catch (InterruptedException ex) {
