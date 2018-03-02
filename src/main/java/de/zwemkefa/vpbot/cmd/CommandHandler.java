@@ -16,6 +16,7 @@ public class CommandHandler {
     public void onMessage(MessageReceivedEvent e) {
         if (e.getChannel().isPrivate()) {
             try {
+                System.out.println("Received cmd \"" + e.getMessage().getContent() + "\" from " + e.getMessage().getAuthor().getName() + "#" + e.getMessage().getAuthor().getDiscriminator());
                 String[] cmd = e.getMessage().getContent().split(" ");
                 switch (cmd[0]) {
                     case "ping":
