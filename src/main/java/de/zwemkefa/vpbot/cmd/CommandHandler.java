@@ -18,6 +18,7 @@ public class CommandHandler {
             try {
                 System.out.println("Received cmd \"" + e.getMessage().getContent() + "\" from " + e.getMessage().getAuthor().getName() + "#" + e.getMessage().getAuthor().getDiscriminator());
                 String[] cmd = e.getMessage().getContent().split(" ");
+                e.getChannel().setTypingStatus(true);
                 switch (cmd[0]) {
                     case "ping":
                         EmbedBuilder b = new EmbedBuilder();
@@ -49,9 +50,11 @@ public class CommandHandler {
                         VPBot.getInstance().sendMessage(e.getChannel(), builder.build());
                         break;
                 }
+                e.getChannel().setTypingStatus(false);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 VPBot.getInstance().sendMessage(e.getChannel(), DiscordFormatter.formatErrorMessage(ex));
+                e.getChannel().setTypingStatus(false);
             }
         }
     }
