@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import de.zwemkefa.vpbot.cmd.CommandHandler;
 import de.zwemkefa.vpbot.config.ChannelConfig;
 import de.zwemkefa.vpbot.io.UntisClassResolver;
+import de.zwemkefa.vpbot.io.UntisIOHelper;
 import de.zwemkefa.vpbot.thread.TimetableWatcherThread;
+import de.zwemkefa.vpbot.timetable.PeriodResolver;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
@@ -29,6 +31,8 @@ public class VPBot {
     private Gson gson;
 
     private ChannelConfig channelConfig;
+
+    private PeriodResolver periodResolver;
 
     private static final Path CONFIG_PATH = Paths.get("config.json");
 
@@ -70,6 +74,7 @@ public class VPBot {
         }
 
         this.classResolver = new UntisClassResolver();
+        this.periodResolver = new PeriodResolver(UntisIOHelper.getPeriodsRaw(Exception::printStackTrace));
 
         try {
             Thread.sleep(10000);
@@ -86,6 +91,10 @@ public class VPBot {
 
     public static VPBot getInstance() {
         return instance;
+    }
+
+    public PeriodResolver getPeriodResolver() {
+        return periodResolver;
     }
 
     public static void main(String args[]) {

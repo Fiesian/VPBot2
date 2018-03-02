@@ -1,5 +1,6 @@
 package de.zwemkefa.vpbot.util;
 
+import de.zwemkefa.vpbot.VPBot;
 import de.zwemkefa.vpbot.timetable.Timetable;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.util.EmbedBuilder;
@@ -84,26 +85,34 @@ public class DiscordFormatter {
                 e.appendField(DAY_NAMES[loopDay - 1], b.toString(), true);
                 b = new StringBuilder();
             }
-            String sub = t.getSubjectNames().getOrDefault(p.getSubject(), "Eine Veranstaltung");
+
+            String periodName = VPBot.getInstance().getPeriodResolver().getPeriod(p.getStart(), p.getEnd());
+            if (periodName == null)
+                b.append(TIME_FORMATTER.format(p.getStart())).append(" bis ").append(TIME_FORMATTER.format(p.getEnd())).append(":");
+            else
+                b.append(periodName).append(". Std.: ");
+
+            b.append(t.getSubjectNames().getOrDefault(p.getSubject(), "Eine Veranstaltung")).append(" wird");
+
             switch (p.getCellState()) {
                 case CANCEL:
-                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" ausfallen.\n");
+                    b.append(" ausfallen.\n");
                     break;
 
                 case SUBSTITUTION:
-                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" vertreten werden.\n");
+                    b.append(" vertreten werden.\n");
                     break;
 
                 case ADDITIONAL:
-                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" zusätzlich stattfinden.\n");
+                    b.append(" zusätzlich stattfinden.\n");
                     break;
 
                 case FREE:
-                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" nicht stattfinden.\n");
+                    b.append(" nicht stattfinden.\n");
                     break;
 
                 case ROOMSUBSTITUTION:
-                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" in einem anderen Raum stattfinden.\n");
+                    b.append(" in einem anderen Raum stattfinden.\n");
                     break;
             }
             if (p.getPeriodText().isPresent() && !p.getPeriodText().get().equals("")) {
