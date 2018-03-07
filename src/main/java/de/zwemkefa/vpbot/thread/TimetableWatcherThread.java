@@ -6,24 +6,28 @@ import de.zwemkefa.vpbot.io.UntisIOHelper;
 import de.zwemkefa.vpbot.timetable.Timetable;
 import de.zwemkefa.vpbot.util.DiscordFormatter;
 import de.zwemkefa.vpbot.util.ExceptionHandler;
+import sx.blah.discord.handle.obj.ActivityType;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.handle.obj.StatusType;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
+
+import java.util.ArrayList;
 
 public class TimetableWatcherThread extends Thread {
     private ChannelConfig.Entry config;
     private Timetable lastCheck;
     private IMessage lastMessage;
     private IChannel channel;
-    private ExceptionHandler e;
+    private TTWExceptionHandler e;
     private int classId;
 
     public TimetableWatcherThread(ChannelConfig.Entry config) {
         this.config = config;
         this.channel = VPBot.getInstance().getClient().getChannelByID(config.getId());
 
-        this.e = (ex) -> VPBot.getInstance().sendMessage(this.channel, DiscordFormatter.formatErrorMessage(ex));
+        this.e = new TTWExceptionHandler();
 
         this.classId = VPBot.getInstance().getClassResolver().resolve(this.config.getClassName(), e);
 
@@ -41,45 +45,116 @@ public class TimetableWatcherThread extends Thread {
     public void run() {
         while (true) {
             this.channel.setTypingStatus(true);
-            Timetable t = Timetable.ofRawJSON(UntisIOHelper.getTimetableRaw(this.classId, this.e), UntisIOHelper.getNewsRaw(this.e), this.e, classId);
-            if (t != null && (!t.equals(lastCheck) || (this.lastCheck == null && this.config.getLastMessageHash() != t.hashCode()))) {
-                this.lastCheck = t;
-                RequestBuffer.request(() -> {
-                    try {
-                        if (this.lastMessage != null) {
-                            this.lastMessage.delete();
-                        }
-                        this.lastMessage = channel.sendMessage(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true));
-                        this.config.setLastMessageId(this.lastMessage.getLongID());
-                        this.config.setLastMessageHash(t.hashCode());
-                        VPBot.getInstance().saveConfig();
-                    } catch (DiscordException e) {
-                        System.err.println("Could not send message: ");
-                        e.printStackTrace();
-                    }
-                });
-            } else {
-                if (this.lastMessage == null) {
-                    System.err.println("null @ TTW#(this.lastMessage == null). Won't edit lastMessage");
-                } else if (t == null) {
-                    System.err.println("null @ TTW#(t == null). Won't edit lastMessage");
-                } else {
+            String timetableRaw = UntisIOHelper.getTimetableRaw(this.classId, this.e);
+            String newsRaw = UntisIOHelper.getNewsRaw(this.e);
+            if (timetableRaw != null && newsRaw != null) {
+                Timetable t = Timetable.ofRawJSON(timetableRaw, newsRaw, this.e, this.classId);
+                if (t != null && (!t.equals(lastCheck) || (this.lastCheck == null && this.config.getLastMessageHash() != t.hashCode()))) {
+                    this.lastCheck = t;
                     RequestBuffer.request(() -> {
                         try {
-                            this.lastMessage.edit(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true));
-                        } catch (DiscordException e) {
+                            if (this.lastMessage != null) {
+                                this.lastMessage.delete();
+                            }
+                            this.lastMessage = channel.sendMessage(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true));
+                            this.config.setLastMessageId(this.lastMessage.getLongID());
+                            this.config.setLastMessageHash(t.hashCode());
+                            VPBot.getInstance().saveConfig();
+                            this.e.onMessageSuccess();
+                            this.channel.setTypingStatus(false);
+                        } catch (Exception ex) {
                             System.err.println("Could not send message: ");
-                            e.printStackTrace();
+                            ex.printStackTrace();
+                            this.e.handleException(ex);
                         }
                     });
+                } else {
+                    if (this.lastMessage == null) {
+                        System.err.println("null @ TTW#(this.lastMessage == null). Won't edit lastMessage");
+                    } else if (t == null) {
+                        System.err.println("null @ TTW#(t == null). Won't edit lastMessage");
+                    } else {
+                        RequestBuffer.request(() -> {
+                            try {
+                                this.lastMessage.edit(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true));
+                                this.e.onMessageSuccess();
+                                this.channel.setTypingStatus(false);
+                            } catch (DiscordException ex) {
+                                System.err.println("Could not send message: ");
+                                ex.printStackTrace();
+                                this.e.handleException(ex);
+                            }
+                        });
+                    }
                 }
             }
-            this.channel.setTypingStatus(false);
             try {
                 Thread.sleep(this.config.getCheckTime() * 1000);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
                 this.e.handleException(ex);
+            }
+
+        }
+
+    }
+
+    class TTWExceptionHandler implements ExceptionHandler {
+        private boolean lastMessageSuccess = true;
+        private IMessage errorMessage = null;
+        private ArrayList<Exception> exceptions = new ArrayList<>();
+
+        public void onMessageSuccess() {
+            if (!lastMessageSuccess) {
+                lastMessageSuccess = true;
+                errorMessage = null;
+                exceptions.clear();
+                VPBot.getInstance().getClient().changePresence(StatusType.IDLE, ActivityType.PLAYING, "VPBot v" + VPBot.getVersion());
+            }
+        }
+
+        @Override
+        public void handleException(Exception ex) {
+            if (lastMessageSuccess) {
+                RequestBuffer.request(() -> {
+                    try {
+                        this.errorMessage = channel.sendMessage(DiscordFormatter.formatErrorMessage(ex));
+                        channel.setTypingStatus(false);
+                    } catch (DiscordException ex2) {
+                        System.err.println("Could not send error message: ");
+                        ex2.printStackTrace();
+                        this.exceptions.add(ex2);
+                    }
+                });
+                this.exceptions.add(ex);
+                this.lastMessageSuccess = false;
+                VPBot.getInstance().getClient().changePresence(StatusType.DND);
+            } else {
+                this.exceptions.add(ex);
+                if (this.errorMessage == null) {
+                    System.out.println("null @ TTWEx#(this.errorMessage == null) Trying to send a new message");
+                    RequestBuffer.request(() -> {
+                        try {
+                            this.errorMessage = channel.sendMessage(DiscordFormatter.formatErrorMessage(exceptions));
+                            channel.setTypingStatus(false);
+                        } catch (DiscordException ex2) {
+                            System.err.println("Could not send error message: ");
+                            ex2.printStackTrace();
+                            this.exceptions.add(ex2);
+                        }
+                    });
+                } else {
+                    RequestBuffer.request(() -> {
+                        try {
+                            this.errorMessage.edit(DiscordFormatter.formatErrorMessage(exceptions));
+                            channel.setTypingStatus(false);
+                        } catch (DiscordException ex3) {
+                            System.err.println("Could not edit error message: ");
+                            ex3.printStackTrace();
+                            exceptions.add(ex3);
+                        }
+                    });
+                }
             }
         }
     }

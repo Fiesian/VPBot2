@@ -8,9 +8,9 @@ import sx.blah.discord.util.EmbedBuilder;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DiscordFormatter {
     private static final String[] DAY_NAMES = new String[]{"Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"};
@@ -152,6 +152,16 @@ public class DiscordFormatter {
         }
         b.withColor(Color.RED);
         b.withFooterText(e.getClass().getName() + " am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()));
+        return b.build();
+    }
+
+    public static EmbedObject formatErrorMessage(Collection<Exception> e) {
+        EmbedBuilder b = new EmbedBuilder()
+                .withColor(Color.RED)
+                .withTitle("Mehrere Fehler sind aufgetreten.")
+                .withFooterText("Letzter Fehler am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()));
+        Map<Class, Long> map = e.stream().collect(Collectors.groupingBy(Exception::getClass, Collectors.counting()));
+        map.keySet().stream().sorted(Comparator.comparingLong(map::get)).forEach((c) -> b.appendField(map.get(c) + "x", c.getName(), false));
         return b.build();
     }
 }
