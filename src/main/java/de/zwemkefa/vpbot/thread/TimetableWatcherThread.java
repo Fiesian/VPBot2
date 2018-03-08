@@ -13,6 +13,8 @@ import sx.blah.discord.handle.obj.StatusType;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
+import java.net.SocketException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class TimetableWatcherThread extends Thread {
@@ -32,7 +34,7 @@ public class TimetableWatcherThread extends Thread {
         this.classId = VPBot.getInstance().getClassResolver().resolve(this.config.getClassName(), e);
 
         if (config.getLastMessageId() != 0)
-            this.lastMessage = channel.getMessageByID(config.getLastMessageId());
+            this.lastMessage = channel.fetchMessage(config.getLastMessageId());
 
         if (this.classId == 0) {
             return;
@@ -49,7 +51,7 @@ public class TimetableWatcherThread extends Thread {
             String newsRaw = UntisIOHelper.getNewsRaw(this.e);
             if (timetableRaw != null && newsRaw != null) {
                 Timetable t = Timetable.ofRawJSON(timetableRaw, newsRaw, this.e, this.classId);
-                if (t != null && (!t.equals(lastCheck) || (this.lastCheck == null && this.config.getLastMessageHash() != t.hashCode()))) {
+                if (t != null && (!t.equals(lastCheck) && this.config.getLastMessageHash() != t.hashCode())) {
                     this.lastCheck = t;
                     RequestBuffer.request(() -> {
                         try {
@@ -103,32 +105,62 @@ public class TimetableWatcherThread extends Thread {
         private boolean lastMessageSuccess = true;
         private IMessage errorMessage = null;
         private ArrayList<Exception> exceptions = new ArrayList<>();
+        private boolean lastMessageSocket = false;
+        private LocalDateTime socketExceptionStart = null;
 
         public void onMessageSuccess() {
             if (!lastMessageSuccess) {
                 lastMessageSuccess = true;
                 errorMessage = null;
                 exceptions.clear();
-                VPBot.getInstance().getClient().changePresence(StatusType.IDLE, ActivityType.PLAYING, "VPBot v" + VPBot.getVersion());
+                VPBot.getInstance().getClient().changePresence(StatusType.ONLINE, ActivityType.PLAYING, "VPBot v" + VPBot.getVersion());
+            }
+            if (lastMessageSocket) {
+                lastMessageSocket = false;
+                socketExceptionStart = null;
+                VPBot.getInstance().getClient().changePresence(StatusType.ONLINE, ActivityType.PLAYING, "VPBot v" + VPBot.getVersion());
             }
         }
 
         @Override
         public void handleException(Exception ex) {
             if (lastMessageSuccess) {
-                RequestBuffer.request(() -> {
-                    try {
-                        this.errorMessage = channel.sendMessage(DiscordFormatter.formatErrorMessage(ex));
-                        channel.setTypingStatus(false);
-                    } catch (DiscordException ex2) {
-                        System.err.println("Could not send error message: ");
-                        ex2.printStackTrace();
-                        this.exceptions.add(ex2);
+                exceptions.add(ex);
+                if (ex instanceof SocketException) {
+                    if (!lastMessageSocket) {
+                        lastMessageSocket = true;
+                        socketExceptionStart = LocalDateTime.now();
                     }
-                });
-                this.exceptions.add(ex);
-                this.lastMessageSuccess = false;
-                VPBot.getInstance().getClient().changePresence(StatusType.DND);
+                    if (lastMessage == null) {
+                        System.out.println("SocketException, but lastMessage == null. Won't do anything.");
+                    } else {
+                        System.out.println("SocketException: " + ex.getMessage());
+                        RequestBuffer.request(() -> {
+                            try {
+                                lastMessage.edit(DiscordFormatter.formatSocketErrorMessage(socketExceptionStart));
+                                channel.setTypingStatus(false);
+                            } catch (DiscordException ex4) {
+                                System.err.println("Could not edit message: ");
+                                this.handleException(ex4);
+                            }
+                        });
+                        VPBot.getInstance().getClient().changePresence(StatusType.IDLE, ActivityType.PLAYING, "VPBot v" + VPBot.getVersion());
+                    }
+                } else {
+                    RequestBuffer.request(() -> {
+                        try {
+                            this.errorMessage = channel.sendMessage(DiscordFormatter.formatErrorMessage(ex));
+                            channel.setTypingStatus(false);
+                        } catch (DiscordException ex2) {
+                            System.err.println("Could not send error message: ");
+                            ex2.printStackTrace();
+                            this.exceptions.add(ex2);
+                        }
+                    });
+                    this.exceptions.add(ex);
+                    this.lastMessageSuccess = false;
+                    VPBot.getInstance().getClient().changePresence(StatusType.DND);
+                }
             } else {
                 this.exceptions.add(ex);
                 if (this.errorMessage == null) {

@@ -164,4 +164,13 @@ public class DiscordFormatter {
         map.keySet().stream().sorted(Comparator.comparingLong(map::get)).forEach((c) -> b.appendField(map.get(c) + "x", c.getName(), false));
         return b.build();
     }
+
+    public static EmbedObject formatSocketErrorMessage(LocalDateTime since) {
+        EmbedBuilder b = new EmbedBuilder()
+                .withColor(Color.RED)
+                .withTitle("Netzwerkfehler")
+                .withDescription("Bitte eine Weile abwarten oder https://goo.gl/5wSdcL nutzen.")
+                .withFooterText("Aktualisiert am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()) + " | Störung besteht seit dem " + DATE_FORMATTER.format(since) + " um " + TIME_FORMATTER.format(since));
+        return b.build();
+    }
 }
