@@ -63,6 +63,12 @@ public class Timetable {
 
     public static Timetable ofRawJSON(String raw, String newsRaw, ExceptionHandler exceptionHandler, Integer classID) {
 
+        //HOTFIX 2.1.3 START
+        if (raw == null || newsRaw == null) {
+            return null;
+        }
+        //HOTFIX 2.1.3 END
+
         Boolean[] emptyDays = new Boolean[]{true, true, true, true, true};
         ArrayList<Period> periods = new ArrayList<>();
         HashMap<Integer, String> subjectNames = new HashMap<>();

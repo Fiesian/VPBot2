@@ -11,6 +11,8 @@ import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
+import java.net.SocketException;
+
 public class TimetableWatcherThread extends Thread {
     private ChannelConfig.Entry config;
     private Timetable lastCheck;
@@ -23,17 +25,32 @@ public class TimetableWatcherThread extends Thread {
         this.config = config;
         this.channel = VPBot.getInstance().getClient().getChannelByID(config.getId());
 
-        this.e = (ex) -> VPBot.getInstance().sendMessage(this.channel, DiscordFormatter.formatErrorMessage(ex));
+        if (config.getLastMessageId() != 0)
+            this.lastMessage = channel.fetchMessage(config.getLastMessageId());
+
+        this.e = (ex) -> { //HOTFIX 2.1.3 START
+            if (ex instanceof SocketException) {
+                System.out.println("SocketException, won't send a error message");
+                if (lastMessage != null) {
+                    RequestBuffer.request(() -> {
+                        try {
+                            this.lastMessage.edit("**Netzwerkproblem**\nBitte später wiederkommen oder https://goo.gl/5wSdcL nutzen\n`Hotfix 2.1.3`");
+                        } catch (DiscordException e) {
+                            System.err.println("(HOTFIX)Could not edit message: ");
+                            e.printStackTrace();
+                        }
+                    });
+                }
+            } else
+                VPBot.getInstance().sendMessage(this.channel, DiscordFormatter.formatErrorMessage(ex));
+        }; //HOTFIX 2.1.3 END
 
         this.classId = VPBot.getInstance().getClassResolver().resolve(this.config.getClassName(), e);
 
-        if (config.getLastMessageId() != 0)
-            this.lastMessage = channel.getMessageByID(config.getLastMessageId());
 
         if (this.classId == 0) {
             return;
         }
-
         this.start();
     }
 

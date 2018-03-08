@@ -25,7 +25,6 @@ public class UntisIOHelper {
                 answer.append(line);
             }
             reader.close();
-
             return answer.toString();
         } catch (Exception e){
             exceptionHandler.handleException(e);
