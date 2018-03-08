@@ -58,7 +58,7 @@ public class TimetableWatcherThread extends Thread {
     public void run() {
         while (true) {
             Timetable t = Timetable.ofRawJSON(UntisIOHelper.getTimetableRaw(this.classId, this.e), UntisIOHelper.getNewsRaw(this.e), this.e, classId);
-            if (t != null && (!t.equals(lastCheck) || (this.lastCheck == null && this.config.getLastMessageHash() != t.hashCode()))) {
+            if (t != null && (!t.equals(lastCheck) && this.config.getLastMessageHash() != t.hashCode())) {
                 this.lastCheck = t;
                 RequestBuffer.request(() -> {
                     try {
