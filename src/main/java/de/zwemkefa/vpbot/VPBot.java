@@ -8,7 +8,9 @@ import de.zwemkefa.vpbot.thread.TimetableWatcherThread;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
+import sx.blah.discord.handle.obj.ActivityType;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.StatusType;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
@@ -76,7 +78,7 @@ public class VPBot {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        client.changePlayingText("VPBot v" + VPBot.getVersion());
+        client.changePresence(StatusType.ONLINE, ActivityType.PLAYING, "VPBot v" + VPBot.getVersion());
         this.channelConfig.getChannels().forEach(e -> new TimetableWatcherThread(e));
     }
 
