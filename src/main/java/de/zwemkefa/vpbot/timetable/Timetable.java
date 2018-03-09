@@ -4,7 +4,6 @@ import de.zwemkefa.vpbot.util.ExceptionHandler;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,43 +21,6 @@ public class Timetable {
         this.periods = periods;
         this.subjectNames = subjectNames;
         this.messagesOfDay = messagesOfDay;
-    }
-
-    public Boolean[] getEmptyDays() {
-        return emptyDays;
-    }
-
-    public ArrayList<Period> getPeriods() {
-        return periods;
-    }
-
-    public Map<Integer, String> getSubjectNames() {
-        return subjectNames;
-    }
-
-    public ArrayList<String> getMessagesOfDay() {
-        return messagesOfDay;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Timetable timetable = (Timetable) o;
-
-        // Probably incorrect - comparing Object[] arrays with Arrays.equals
-        if (!Arrays.equals(emptyDays, timetable.emptyDays)) return false;
-        if (periods != null ? !periods.equals(timetable.periods) : timetable.periods != null) return false;
-        return subjectNames != null ? subjectNames.equals(timetable.subjectNames) : timetable.subjectNames == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Arrays.hashCode(emptyDays);
-        result = 31 * result + (periods != null ? periods.hashCode() : 0);
-        result = 31 * result + (subjectNames != null ? subjectNames.hashCode() : 0);
-        return result;
     }
 
     public static Timetable ofRawJSON(String raw, String newsRaw, ExceptionHandler exceptionHandler, Integer classID) {
@@ -132,12 +94,49 @@ public class Timetable {
         return new Timetable(emptyDays, periods, subjectNames, messagesOfDay);
     }
 
-    private static LocalDate toLocalDate(String s) throws ParseException {
+    private static LocalDate toLocalDate(String s) {
         return LocalDate.parse(s, DateTimeFormatter.BASIC_ISO_DATE);
     }
 
     private static LocalDateTime toLocalDateTime(LocalDate date, int time) {
         return date.atTime(time / 100, time % 100);
+    }
+
+    public Boolean[] getEmptyDays() {
+        return emptyDays;
+    }
+
+    public ArrayList<Period> getPeriods() {
+        return periods;
+    }
+
+    public Map<Integer, String> getSubjectNames() {
+        return subjectNames;
+    }
+
+    public ArrayList<String> getMessagesOfDay() {
+        return messagesOfDay;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Timetable timetable = (Timetable) o;
+
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        if (!Arrays.equals(emptyDays, timetable.emptyDays)) return false;
+        if (periods != null ? !periods.equals(timetable.periods) : timetable.periods != null) return false;
+        return subjectNames != null ? subjectNames.equals(timetable.subjectNames) : timetable.subjectNames == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(emptyDays);
+        result = 31 * result + (periods != null ? periods.hashCode() : 0);
+        result = 31 * result + (subjectNames != null ? subjectNames.hashCode() : 0);
+        return result;
     }
 
     public enum CellState {

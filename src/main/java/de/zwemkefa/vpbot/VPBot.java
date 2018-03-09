@@ -24,25 +24,18 @@ import java.nio.file.Paths;
 
 public class VPBot {
 
-    private static VPBot instance;
-
-    private IDiscordClient client;
-
-    private UntisClassResolver classResolver;
-
-    private Gson gson;
-
-    private ChannelConfig channelConfig;
-
-    private PeriodResolver periodResolver;
-
-    private static final Path CONFIG_PATH = Paths.get("config.json");
-
     public static final int VERSION_MAJOR = 2;
     public static final int VERSION_MINOR = 2;
     public static final int VERSION_PATCH = 0;
+    private static final Path CONFIG_PATH = Paths.get("config.json");
+    private static VPBot instance;
+    private IDiscordClient client;
+    private UntisClassResolver classResolver;
+    private final Gson gson;
+    private ChannelConfig channelConfig;
+    private PeriodResolver periodResolver;
 
-    public VPBot() {
+    private VPBot() {
         VPBot.instance = this;
         System.out.println("Starting VPBot v" + VPBot.getVersion());
         this.gson = new Gson();
@@ -84,23 +77,31 @@ public class VPBot {
             e.printStackTrace();
         }
         client.changePresence(StatusType.ONLINE, ActivityType.PLAYING, "VPBot v" + VPBot.getVersion());
-        this.channelConfig.getChannels().forEach(e -> new TimetableWatcherThread(e));
-    }
-
-    public IDiscordClient getClient() {
-        return client;
+        this.channelConfig.getChannels().forEach(TimetableWatcherThread::new);
     }
 
     public static VPBot getInstance() {
         return instance;
     }
 
-    public PeriodResolver getPeriodResolver() {
-        return periodResolver;
-    }
-
     public static void main(String args[]) {
         instance = new VPBot();
+    }
+
+    public static String getVersion() {
+        return VERSION_MAJOR + "." + VERSION_MINOR + (VERSION_PATCH == 0 ? "" : "." + VERSION_PATCH);
+    }
+
+    public static int compareVersion(int major, int minor, int patch) {
+        return Integer.compare(VPBot.VERSION_MAJOR, major) == 0 ? (Integer.compare(VPBot.VERSION_MINOR, minor) == 0 ? Integer.compare(VPBot.VERSION_PATCH, patch) : Integer.compare(VPBot.VERSION_MAJOR, minor)) : Integer.compare(VPBot.VERSION_MAJOR, major);
+    }
+
+    public IDiscordClient getClient() {
+        return client;
+    }
+
+    public PeriodResolver getPeriodResolver() {
+        return periodResolver;
     }
 
     public void sendMessage(IChannel channel, String message) {
@@ -139,13 +140,5 @@ public class VPBot {
 
     public Gson getGson() {
         return gson;
-    }
-
-    public static String getVersion() {
-        return VERSION_MAJOR + "." + VERSION_MINOR + (VERSION_PATCH == 0 ? "" : "." + VERSION_PATCH);
-    }
-
-    public static int compareVersion(int major, int minor, int patch) {
-        return Integer.compare(VPBot.VERSION_MAJOR, major) == 0 ? (Integer.compare(VPBot.VERSION_MINOR, minor) == 0 ? Integer.compare(VPBot.VERSION_PATCH, patch) : Integer.compare(VPBot.VERSION_MAJOR, minor)) : Integer.compare(VPBot.VERSION_MAJOR, major);
     }
 }

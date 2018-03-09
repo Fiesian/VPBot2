@@ -3,12 +3,16 @@ package de.zwemkefa.vpbot.config;
 import de.zwemkefa.vpbot.VPBot;
 
 import java.util.HashSet;
+import java.util.Objects;
 
 public class ChannelConfig {
 
     private HashSet<Entry> channels = new HashSet<>();
 
     private String token = "";
+    private int version_major = 0;
+    private int version_minor = 0;
+    private int version_patch = 0;
 
     public HashSet<Entry> getChannels() {
         return channels;
@@ -18,12 +22,8 @@ public class ChannelConfig {
         return token;
     }
 
-    private int version_major = 0;
-    private int version_minor = 0;
-    private int version_patch = 0;
-
     public boolean init() {
-        if (this.token == null || this.token == "") {
+        if (this.token == null || Objects.equals(this.token, "")) {
             System.err.println("Please enter your discord token in config.json");
             return false;
         }
@@ -59,7 +59,7 @@ public class ChannelConfig {
     public static class Entry {
         private long id;
         private String className;
-        private long checkTime = 600l;
+        private long checkTime = 600L;
         private long lastMessageId = 0;
         private int lastMessageHash = 0;
 

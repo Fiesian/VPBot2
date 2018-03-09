@@ -30,7 +30,7 @@ public class UntisIOHelper {
             reader.close();
 
             return answer.toString();
-        } catch (Exception e){
+        } catch (Exception e) {
             exceptionHandler.handleException(e);
             e.printStackTrace();
         }
@@ -52,7 +52,7 @@ public class UntisIOHelper {
             reader.close();
 
             return answer.toString();
-        } catch (Exception e){
+        } catch (Exception e) {
             exceptionHandler.handleException(e);
             e.printStackTrace();
         }
@@ -115,9 +115,9 @@ public class UntisIOHelper {
 
     private static String getDateString(boolean includeHyphen) {
         LocalDateTime d = LocalDateTime.now();
-        switch(d.getDayOfWeek()){
+        switch (d.getDayOfWeek()) {
             case FRIDAY:
-                if(d.getHour() > 14)
+                if (d.getHour() > 14)
                     d = d.plusDays(3);
                 break;
 
