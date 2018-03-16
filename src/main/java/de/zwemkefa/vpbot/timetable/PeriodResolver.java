@@ -11,6 +11,9 @@ public class PeriodResolver {
     private HashMap<Integer, String> map = new HashMap<>();
 
     public PeriodResolver(String rawJson) {
+        if(rawJson == null){
+            return;
+        }
         JSONArray json = new JSONObject(rawJson)
                 .getJSONObject("result")
                 .getJSONArray("units");

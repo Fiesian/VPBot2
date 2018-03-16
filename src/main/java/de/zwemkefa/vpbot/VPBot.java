@@ -40,7 +40,7 @@ public class VPBot {
         System.out.println("Starting VPBot v" + VPBot.getVersion());
         this.gson = new Gson();
 
-        if (!Files.exists(CONFIG_PATH)) {
+        if (!CONFIG_PATH.toFile().exists()) {
             this.channelConfig = new ChannelConfig();
             this.saveConfig();
         } else {
@@ -75,6 +75,7 @@ public class VPBot {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
         client.changePresence(StatusType.ONLINE, ActivityType.PLAYING, "VPBot v" + VPBot.getVersion());
         this.channelConfig.getChannels().forEach(TimetableWatcherThread::new);
@@ -85,7 +86,7 @@ public class VPBot {
     }
 
     public static void main(String args[]) {
-        instance = new VPBot();
+        new VPBot();
     }
 
     public static String getVersion() {

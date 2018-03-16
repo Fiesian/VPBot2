@@ -13,13 +13,15 @@ import java.time.format.DateTimeFormatter;
 
 public class UntisIOHelper {
     private static final String HOST = "mese.webuntis.com";
-    private static final String SCHOOLNAME = "_a3NoLXN0LiBhbnNnYXI=";
+    private static final String COOKIE_VALUE = "schoolname=_a3NoLXN0LiBhbnNnYXI=";
+    private static final String COOKIE_PROPERTY = "Cookie";
+    private static final String PROTOCOL = "https";
     private static final byte[] PERIOD_POST_DATA = "{\"id\":3,\"method\":\"getTimegrid\",\"params\":[3],\"jsonrpc\":\"2.0\"}".getBytes(StandardCharsets.UTF_8);
 
     public static String getTimetableRaw(int classID, ExceptionHandler exceptionHandler) {
         try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/data?elementType=1&elementId=" + classID + "&date=" + UntisIOHelper.getDateString(true) + "&formatId=1").openConnection();
-            con.setRequestProperty("Cookie", "schoolname=" + UntisIOHelper.SCHOOLNAME);
+            HttpsURLConnection con = (HttpsURLConnection) new URL(UntisIOHelper.PROTOCOL, UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/data?elementType=1&elementId=" + classID + "&date=" + UntisIOHelper.getDateString(true) + "&formatId=1").openConnection();
+            con.setRequestProperty(UntisIOHelper.COOKIE_PROPERTY, UntisIOHelper.COOKIE_VALUE);
             con.connect();
             StringBuilder answer = new StringBuilder();
             BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -40,8 +42,8 @@ public class UntisIOHelper {
 
     public static String getClassesRaw(ExceptionHandler exceptionHandler) {
         try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/pageconfig?type=1&id=123&date=" + UntisIOHelper.getDateString(true) + "&formatId=1").openConnection();
-            con.setRequestProperty("Cookie", "schoolname=" + UntisIOHelper.SCHOOLNAME);
+            HttpsURLConnection con = (HttpsURLConnection) new URL(UntisIOHelper.PROTOCOL, UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/pageconfig?type=1&id=123&date=" + UntisIOHelper.getDateString(true) + "&formatId=1").openConnection();
+            con.setRequestProperty(UntisIOHelper.COOKIE_PROPERTY, UntisIOHelper.COOKIE_VALUE);
             con.connect();
             StringBuilder answer = new StringBuilder();
             BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -62,8 +64,8 @@ public class UntisIOHelper {
 
     public static String getNewsRaw(ExceptionHandler exceptionHandler) {
         try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/api/public/news/newsWidgetData?date=" + UntisIOHelper.getDateString(false)).openConnection();
-            con.setRequestProperty("Cookie", "schoolname=" + UntisIOHelper.SCHOOLNAME);
+            HttpsURLConnection con = (HttpsURLConnection) new URL(UntisIOHelper.PROTOCOL, UntisIOHelper.HOST, "/WebUntis/api/public/news/newsWidgetData?date=" + UntisIOHelper.getDateString(false)).openConnection();
+            con.setRequestProperty(UntisIOHelper.COOKIE_PROPERTY, UntisIOHelper.COOKIE_VALUE);
             con.connect();
             StringBuilder answer = new StringBuilder();
             BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -86,8 +88,8 @@ public class UntisIOHelper {
         try {
 
 
-            HttpsURLConnection con = (HttpsURLConnection) new URL("https", UntisIOHelper.HOST, "/WebUntis/jsonrpc_web/jsonTimegridService").openConnection();
-            con.setRequestProperty("Cookie", "schoolname=" + UntisIOHelper.SCHOOLNAME);
+            HttpsURLConnection con = (HttpsURLConnection) new URL(UntisIOHelper.PROTOCOL, UntisIOHelper.HOST, "/WebUntis/jsonrpc_web/jsonTimegridService").openConnection();
+            con.setRequestProperty(UntisIOHelper.COOKIE_PROPERTY, UntisIOHelper.COOKIE_VALUE);
             con.setRequestMethod("POST");
             con.setDoOutput(true);
             con.setUseCaches(false);

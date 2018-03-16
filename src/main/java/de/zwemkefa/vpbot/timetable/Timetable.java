@@ -188,7 +188,7 @@ public class Timetable {
             if (subject != period.subject) return false;
             if (cellState != period.cellState) return false;
             if (start != null ? !start.equals(period.start) : period.start != null) return false;
-            return (end != null ? end.equals(period.end) : period.end == null) && (periodText != null ? periodText.equals(period.periodText) : period.periodText == null);
+            return (end != null ? end.equals(period.end) : period.end == null) && (periodText.isPresent() ? periodText.get().equals(period.periodText.get()) : period.periodText.isPresent());
         }
 
         @Override
@@ -197,7 +197,7 @@ public class Timetable {
             result = 31 * result + (start != null ? start.hashCode() : 0);
             result = 31 * result + (end != null ? end.hashCode() : 0);
             result = 31 * result + subject;
-            result = 31 * result + (periodText != null ? periodText.hashCode() : 0);
+            result = 31 * result + (periodText.isPresent() ? periodText.get().hashCode() : 0);
             return result;
         }
     }

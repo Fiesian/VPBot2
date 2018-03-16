@@ -114,6 +114,10 @@ public class DiscordFormatter {
                 case ROOMSUBSTITUTION:
                     b.append(" in einem anderen Raum stattfinden.\n");
                     break;
+
+                default:
+                    b.append(" State: " + p.getCellState().name() + "\n");
+                    break;
             }
             if (p.getPeriodText().isPresent() && !p.getPeriodText().get().equals("")) {
                 b.append("Anmerkung: \"").append(p.getPeriodText().get()).append("\"\n");

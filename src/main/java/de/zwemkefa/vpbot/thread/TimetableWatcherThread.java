@@ -94,7 +94,7 @@ public class TimetableWatcherThread extends Thread {
                 Thread.sleep(this.config.getCheckTime() * 1000);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
-                this.e.handleException(ex);
+                Thread.currentThread().interrupt();
             }
 
         }
