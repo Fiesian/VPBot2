@@ -4,6 +4,7 @@ import de.zwemkefa.vpbot.VPBot;
 import de.zwemkefa.vpbot.config.ChannelConfig;
 import de.zwemkefa.vpbot.io.UntisIOHelper;
 import de.zwemkefa.vpbot.timetable.Timetable;
+import de.zwemkefa.vpbot.util.DateHelper;
 import de.zwemkefa.vpbot.util.DiscordFormatter;
 import de.zwemkefa.vpbot.util.ExceptionHandler;
 import sx.blah.discord.handle.obj.ActivityType;
@@ -47,11 +48,13 @@ public class TimetableWatcherThread extends Thread {
     public void run() {
         while (true) {
             this.channel.setTypingStatus(true);
-            String timetableRaw = UntisIOHelper.getTimetableRaw(this.classId, this.e);
-            String newsRaw = UntisIOHelper.getNewsRaw(this.e);
+            LocalDateTime checkTime = DateHelper.getDate(LocalDateTime.now());
+            String timetableRaw = UntisIOHelper.getTimetableRaw(this.classId, this.e, checkTime);
+            String newsRaw = UntisIOHelper.getNewsRaw(this.e, checkTime);
             if (timetableRaw != null && newsRaw != null) {
                 Timetable t = Timetable.ofRawJSON(timetableRaw, newsRaw, this.e, this.classId);
-                if (t != null && (!t.equals(lastCheck) && this.config.getLastMessageHash() != t.hashCode())) {
+                if (t != null && (this.config.getLastMessageHash() != t.hashCode() || (t.hasEvents(false) && !(config.getLastCheckYear() == checkTime.getYear() && config.getLastCheckWeek() == DateHelper.getWeekOfYear(checkTime.toLocalDate())))) && (t.hasEvents(true) || (config.getLastCheckYear() == checkTime.getYear() && config.getLastCheckWeek() == DateHelper.getWeekOfYear(checkTime.toLocalDate())))) {
+                    //TODO: Cleanup, Clarify
                     this.lastCheck = t;
                     RequestBuffer.request(() -> {
                         try {
@@ -61,6 +64,8 @@ public class TimetableWatcherThread extends Thread {
                             this.lastMessage = channel.sendMessage(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true));
                             this.config.setLastMessageId(this.lastMessage.getLongID());
                             this.config.setLastMessageHash(t.hashCode());
+                            this.config.setLastCheckWeek(DateHelper.getWeekOfYear(checkTime.toLocalDate()));
+                            this.config.setLastCheckYear(checkTime.getYear());
                             VPBot.getInstance().saveConfig();
                             this.e.onMessageSuccess();
                             this.channel.setTypingStatus(false);
@@ -79,8 +84,13 @@ public class TimetableWatcherThread extends Thread {
                         RequestBuffer.request(() -> {
                             try {
                                 this.lastMessage.edit(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true));
-                                this.e.onMessageSuccess();
                                 this.channel.setTypingStatus(false);
+                                this.config.setLastMessageId(this.lastMessage.getLongID());
+                                this.config.setLastMessageHash(t.hashCode());
+                                this.config.setLastCheckWeek(DateHelper.getWeekOfYear(checkTime.toLocalDate()));
+                                this.config.setLastCheckYear(checkTime.getYear());
+                                this.e.onMessageSuccess();
+                                VPBot.getInstance().saveConfig();
                             } catch (DiscordException ex) {
                                 System.err.println("Could not send message: ");
                                 ex.printStackTrace();

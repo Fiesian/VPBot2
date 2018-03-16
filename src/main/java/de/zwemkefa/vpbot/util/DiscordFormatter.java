@@ -20,7 +20,7 @@ public class DiscordFormatter {
     public static EmbedObject formatTimetableMessage(Timetable t, String className, boolean filterByTime) {
         List<Boolean> emptyDayList = Arrays.asList(t.getEmptyDays());
         EmbedBuilder e = new EmbedBuilder();
-        e.withFooterText("Aktualisiert am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()));
+        e.withFooterText("Aktualisiert\n am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()));
         e.withTitle("Vertretungsplan " + className);
         if (filterByTime ? t.getPeriods().stream().filter(p -> p.getEnd().isAfter(LocalDateTime.now())).count() == 0 : t.getPeriods().isEmpty()) {
             if (!emptyDayList.contains(Boolean.TRUE)) {

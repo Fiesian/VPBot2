@@ -18,9 +18,9 @@ public class UntisIOHelper {
     private static final String PROTOCOL = "https";
     private static final byte[] PERIOD_POST_DATA = "{\"id\":3,\"method\":\"getTimegrid\",\"params\":[3],\"jsonrpc\":\"2.0\"}".getBytes(StandardCharsets.UTF_8);
 
-    public static String getTimetableRaw(int classID, ExceptionHandler exceptionHandler) {
+    public static String getTimetableRaw(int classID, ExceptionHandler exceptionHandler, LocalDateTime d) {
         try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL(UntisIOHelper.PROTOCOL, UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/data?elementType=1&elementId=" + classID + "&date=" + UntisIOHelper.getDateString(true) + "&formatId=1").openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) new URL(UntisIOHelper.PROTOCOL, UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/data?elementType=1&elementId=" + classID + "&date=" + UntisIOHelper.getDateString(d, true) + "&formatId=1").openConnection();
             con.setRequestProperty(UntisIOHelper.COOKIE_PROPERTY, UntisIOHelper.COOKIE_VALUE);
             con.connect();
             StringBuilder answer = new StringBuilder();
@@ -40,9 +40,9 @@ public class UntisIOHelper {
         return null;
     }
 
-    public static String getClassesRaw(ExceptionHandler exceptionHandler) {
+    public static String getClassesRaw(ExceptionHandler exceptionHandler, LocalDateTime d) {
         try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL(UntisIOHelper.PROTOCOL, UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/pageconfig?type=1&id=123&date=" + UntisIOHelper.getDateString(true) + "&formatId=1").openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) new URL(UntisIOHelper.PROTOCOL, UntisIOHelper.HOST, "/WebUntis/api/public/timetable/weekly/pageconfig?type=1&id=123&date=" + UntisIOHelper.getDateString(d, true) + "&formatId=1").openConnection();
             con.setRequestProperty(UntisIOHelper.COOKIE_PROPERTY, UntisIOHelper.COOKIE_VALUE);
             con.connect();
             StringBuilder answer = new StringBuilder();
@@ -62,9 +62,9 @@ public class UntisIOHelper {
         return null;
     }
 
-    public static String getNewsRaw(ExceptionHandler exceptionHandler) {
+    public static String getNewsRaw(ExceptionHandler exceptionHandler, LocalDateTime d) {
         try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL(UntisIOHelper.PROTOCOL, UntisIOHelper.HOST, "/WebUntis/api/public/news/newsWidgetData?date=" + UntisIOHelper.getDateString(false)).openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) new URL(UntisIOHelper.PROTOCOL, UntisIOHelper.HOST, "/WebUntis/api/public/news/newsWidgetData?date=" + UntisIOHelper.getDateString(d, false)).openConnection();
             con.setRequestProperty(UntisIOHelper.COOKIE_PROPERTY, UntisIOHelper.COOKIE_VALUE);
             con.connect();
             StringBuilder answer = new StringBuilder();
@@ -115,20 +115,7 @@ public class UntisIOHelper {
         return null;
     }
 
-    private static String getDateString(boolean includeHyphen) {
-        LocalDateTime d = LocalDateTime.now();
-        switch (d.getDayOfWeek()) {
-            case FRIDAY:
-                if (d.getHour() > 14)
-                    d = d.plusDays(3);
-                break;
-
-            case SATURDAY:
-            case SUNDAY:
-                d = d.plusDays(2);
-                break;
-        }
-
+    private static String getDateString(LocalDateTime d, boolean includeHyphen) {
         return includeHyphen ? DateTimeFormatter.ISO_LOCAL_DATE.format(d) : DateTimeFormatter.BASIC_ISO_DATE.format(d);
     }
 }

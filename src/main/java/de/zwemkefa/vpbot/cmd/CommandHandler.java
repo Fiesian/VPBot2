@@ -3,6 +3,7 @@ package de.zwemkefa.vpbot.cmd;
 import de.zwemkefa.vpbot.VPBot;
 import de.zwemkefa.vpbot.io.UntisIOHelper;
 import de.zwemkefa.vpbot.timetable.Timetable;
+import de.zwemkefa.vpbot.util.DateHelper;
 import de.zwemkefa.vpbot.util.DiscordFormatter;
 import de.zwemkefa.vpbot.util.ExceptionHandler;
 import sx.blah.discord.api.events.EventSubscriber;
@@ -10,6 +11,7 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 import sx.blah.discord.util.EmbedBuilder;
 
 import java.awt.*;
+import java.time.LocalDateTime;
 
 public class CommandHandler {
     @EventSubscriber
@@ -34,7 +36,8 @@ public class CommandHandler {
                             throw new IllegalArgumentException("Keine Klasse angegeben. \n\"vp <klasse>\"\n\"klassen\" zeigt die Klassen an.");
                         }
                         int classID = VPBot.getInstance().getClassResolver().resolve(cmd[1], exceptionHandler);
-                        Timetable t = Timetable.ofRawJSON(UntisIOHelper.getTimetableRaw(classID, exceptionHandler), UntisIOHelper.getNewsRaw(exceptionHandler), exceptionHandler, classID);
+                        LocalDateTime time = DateHelper.getDate(LocalDateTime.now());
+                        Timetable t = Timetable.ofRawJSON(UntisIOHelper.getTimetableRaw(classID, exceptionHandler, time), UntisIOHelper.getNewsRaw(exceptionHandler, time), exceptionHandler, classID);
                         VPBot.getInstance().sendMessage(e.getChannel(), DiscordFormatter.formatTimetableMessage(t, cmd[1], false));
                         break;
 

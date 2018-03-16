@@ -118,6 +118,10 @@ public class Timetable {
         return messagesOfDay;
     }
 
+    public boolean hasEvents(boolean includeEmptyDays) {
+        return !periods.isEmpty() || (Arrays.asList(this.emptyDays).contains(true) && includeEmptyDays);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
