@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import de.zwemkefa.vpbot.cmd.CommandHandler;
 import de.zwemkefa.vpbot.config.ChannelConfig;
 import de.zwemkefa.vpbot.io.UntisClassResolver;
+import de.zwemkefa.vpbot.io.UntisIOHelper;
 import de.zwemkefa.vpbot.thread.TimetableWatcherThread;
+import de.zwemkefa.vpbot.timetable.PeriodResolver;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
@@ -22,28 +24,23 @@ import java.nio.file.Paths;
 
 public class VPBot {
 
-    private static VPBot instance;
-
-    private IDiscordClient client;
-
-    private UntisClassResolver classResolver;
-
-    private Gson gson;
-
-    private ChannelConfig channelConfig;
-
-    private static final Path CONFIG_PATH = Paths.get("config.json");
-
     public static final int VERSION_MAJOR = 2;
-    public static final int VERSION_MINOR = 1;
-    public static final int VERSION_PATCH = 3;
+    public static final int VERSION_MINOR = 2;
+    public static final int VERSION_PATCH = 0;
+    private static final Path CONFIG_PATH = Paths.get("config.json");
+    private static VPBot instance;
+    private IDiscordClient client;
+    private UntisClassResolver classResolver;
+    private final Gson gson;
+    private ChannelConfig channelConfig;
+    private PeriodResolver periodResolver;
 
-    public VPBot() {
+    private VPBot() {
         VPBot.instance = this;
         System.out.println("Starting VPBot v" + VPBot.getVersion());
         this.gson = new Gson();
 
-        if (!Files.exists(CONFIG_PATH)) {
+        if (!CONFIG_PATH.toFile().exists()) {
             this.channelConfig = new ChannelConfig();
             this.saveConfig();
         } else {
@@ -72,18 +69,16 @@ public class VPBot {
         }
 
         this.classResolver = new UntisClassResolver();
+        this.periodResolver = new PeriodResolver(UntisIOHelper.getPeriodsRaw(Exception::printStackTrace));
 
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
         client.changePresence(StatusType.ONLINE, ActivityType.PLAYING, "VPBot v" + VPBot.getVersion());
-        this.channelConfig.getChannels().forEach(e -> new TimetableWatcherThread(e));
-    }
-
-    public IDiscordClient getClient() {
-        return client;
+        this.channelConfig.getChannels().forEach(TimetableWatcherThread::new);
     }
 
     public static VPBot getInstance() {
@@ -91,7 +86,23 @@ public class VPBot {
     }
 
     public static void main(String args[]) {
-        instance = new VPBot();
+        new VPBot();
+    }
+
+    public static String getVersion() {
+        return VERSION_MAJOR + "." + VERSION_MINOR + (VERSION_PATCH == 0 ? "" : "." + VERSION_PATCH);
+    }
+
+    public static int compareVersion(int major, int minor, int patch) {
+        return Integer.compare(VPBot.VERSION_MAJOR, major) == 0 ? (Integer.compare(VPBot.VERSION_MINOR, minor) == 0 ? Integer.compare(VPBot.VERSION_PATCH, patch) : Integer.compare(VPBot.VERSION_MAJOR, minor)) : Integer.compare(VPBot.VERSION_MAJOR, major);
+    }
+
+    public IDiscordClient getClient() {
+        return client;
+    }
+
+    public PeriodResolver getPeriodResolver() {
+        return periodResolver;
     }
 
     public void sendMessage(IChannel channel, String message) {
@@ -130,13 +141,5 @@ public class VPBot {
 
     public Gson getGson() {
         return gson;
-    }
-
-    public static String getVersion() {
-        return VERSION_MAJOR + "." + VERSION_MINOR + (VERSION_PATCH == 0 ? "" : "." + VERSION_PATCH);
-    }
-
-    public static int compareVersion(int major, int minor, int patch) {
-        return Integer.compare(VPBot.VERSION_MAJOR, major) == 0 ? (Integer.compare(VPBot.VERSION_MINOR, minor) == 0 ? Integer.compare(VPBot.VERSION_PATCH, patch) : Integer.compare(VPBot.VERSION_MAJOR, minor)) : Integer.compare(VPBot.VERSION_MAJOR, major);
     }
 }

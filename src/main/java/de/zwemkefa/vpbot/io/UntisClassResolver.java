@@ -1,10 +1,12 @@
 package de.zwemkefa.vpbot.io;
 
+import de.zwemkefa.vpbot.util.DateHelper;
 import de.zwemkefa.vpbot.util.ExceptionHandler;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +33,7 @@ public class UntisClassResolver {
             if (this.classMap.containsKey(className)) {
                 return this.classMap.get(className);
             } else {
-                this.handleJson(UntisIOHelper.getClassesRaw(e));
+                this.handleJson(UntisIOHelper.getClassesRaw(e, DateHelper.getDate(LocalDateTime.now())));
                 if (this.classMap.containsKey(className)) {
                     return this.classMap.get(className);
                 } else {

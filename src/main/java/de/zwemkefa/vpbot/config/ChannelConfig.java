@@ -1,14 +1,20 @@
 package de.zwemkefa.vpbot.config;
 
 import de.zwemkefa.vpbot.VPBot;
+import de.zwemkefa.vpbot.util.DateHelper;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 
 public class ChannelConfig {
 
     private HashSet<Entry> channels = new HashSet<>();
 
     private String token = "";
+    private int version_major = 0;
+    private int version_minor = 0;
+    private int version_patch = 0;
 
     public HashSet<Entry> getChannels() {
         return channels;
@@ -18,12 +24,8 @@ public class ChannelConfig {
         return token;
     }
 
-    private int version_major = 0;
-    private int version_minor = 0;
-    private int version_patch = 0;
-
     public boolean init() {
-        if (this.token == null || this.token == "") {
+        if (this.token == null || Objects.equals(this.token, "")) {
             System.err.println("Please enter your discord token in config.json");
             return false;
         }
@@ -36,7 +38,6 @@ public class ChannelConfig {
             this.version_major = VPBot.VERSION_MAJOR;
             this.version_minor = VPBot.VERSION_MINOR;
             this.version_patch = VPBot.VERSION_PATCH;
-            VPBot.getInstance().saveConfig();
         }
         return true;
     }
@@ -59,9 +60,11 @@ public class ChannelConfig {
     public static class Entry {
         private long id;
         private String className;
-        private long checkTime = 600l;
+        private long checkTime = 600L;
         private long lastMessageId = 0;
         private int lastMessageHash = 0;
+        private int lastCheckWeek = DateHelper.getWeekOfYear(DateHelper.getDate(LocalDateTime.now()).toLocalDate()); //Push on first check even if there are no events
+        private int lastCheckYear = DateHelper.getDate(LocalDateTime.now()).getYear();
 
         public Entry() {
         }
@@ -99,6 +102,22 @@ public class ChannelConfig {
             this.lastMessageHash = lastMessageHash;
         }
 
+        public int getLastCheckWeek() {
+            return lastCheckWeek;
+        }
+
+        public void setLastCheckWeek(int lastCheckWeek) {
+            this.lastCheckWeek = lastCheckWeek;
+        }
+
+        public int getLastCheckYear() {
+            return lastCheckYear;
+        }
+
+        public void setLastCheckYear(int lastCheckYear) {
+            this.lastCheckYear = lastCheckYear;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -108,6 +127,10 @@ public class ChannelConfig {
 
             if (id != entry.id) return false;
             if (checkTime != entry.checkTime) return false;
+            if (lastMessageId != entry.lastMessageId) return false;
+            if (lastMessageHash != entry.lastMessageHash) return false;
+            if (lastCheckWeek != entry.lastCheckWeek) return false;
+            if (lastCheckYear != entry.lastCheckYear) return false;
             return className != null ? className.equals(entry.className) : entry.className == null;
         }
 
@@ -116,6 +139,10 @@ public class ChannelConfig {
             int result = (int) (id ^ (id >>> 32));
             result = 31 * result + (className != null ? className.hashCode() : 0);
             result = 31 * result + (int) (checkTime ^ (checkTime >>> 32));
+            result = 31 * result + (int) (lastMessageId ^ (lastMessageId >>> 32));
+            result = 31 * result + lastMessageHash;
+            result = 31 * result + lastCheckWeek;
+            result = 31 * result + lastCheckYear;
             return result;
         }
     }

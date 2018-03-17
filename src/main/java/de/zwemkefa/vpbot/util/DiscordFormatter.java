@@ -1,5 +1,6 @@
 package de.zwemkefa.vpbot.util;
 
+import de.zwemkefa.vpbot.VPBot;
 import de.zwemkefa.vpbot.timetable.Timetable;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.util.EmbedBuilder;
@@ -7,9 +8,9 @@ import sx.blah.discord.util.EmbedBuilder;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DiscordFormatter {
     private static final String[] DAY_NAMES = new String[]{"Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"};
@@ -19,7 +20,7 @@ public class DiscordFormatter {
     public static EmbedObject formatTimetableMessage(Timetable t, String className, boolean filterByTime) {
         List<Boolean> emptyDayList = Arrays.asList(t.getEmptyDays());
         EmbedBuilder e = new EmbedBuilder();
-        e.withFooterText("Aktualisiert am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()));
+        e.withFooterText("Aktualisiert\n am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()));
         e.withTitle("Vertretungsplan " + className);
         if (filterByTime ? t.getPeriods().stream().filter(p -> p.getEnd().isAfter(LocalDateTime.now())).count() == 0 : t.getPeriods().isEmpty()) {
             if (!emptyDayList.contains(Boolean.TRUE)) {
@@ -38,7 +39,7 @@ public class DiscordFormatter {
                 return e.build();
             } else if (!emptyDayList.contains(Boolean.FALSE)) {
                 e.withDescription("Es findet kein Unterricht statt.");
-                e.withColor(Color.YELLOW);
+                e.withColor(Color.GREEN);
                 t.getMessagesOfDay().forEach(s -> e.appendField("**Nachricht**", s.replaceAll("<b>", "**")
                         .replaceAll("</b>", "**")
                         .replaceAll("<i>", "*")
@@ -84,26 +85,38 @@ public class DiscordFormatter {
                 e.appendField(DAY_NAMES[loopDay - 1], b.toString(), true);
                 b = new StringBuilder();
             }
-            String sub = t.getSubjectNames().getOrDefault(p.getSubject(), "Eine Veranstaltung");
+
+            String periodName = VPBot.getInstance().getPeriodResolver().getPeriod(p.getStart(), p.getEnd());
+            if (periodName == null)
+                b.append(TIME_FORMATTER.format(p.getStart())).append(" bis ").append(TIME_FORMATTER.format(p.getEnd())).append(": ");
+            else
+                b.append(periodName).append(". Std.: ");
+
+            b.append(t.getSubjectNames().getOrDefault(p.getSubject(), "Eine Veranstaltung")).append(" wird");
+
             switch (p.getCellState()) {
                 case CANCEL:
-                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" ausfallen.\n");
+                    b.append(" ausfallen.\n");
                     break;
 
                 case SUBSTITUTION:
-                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" vertreten werden.\n");
+                    b.append(" vertreten werden.\n");
                     break;
 
                 case ADDITIONAL:
-                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" zusätzlich stattfinden.\n");
+                    b.append(" zusätzlich stattfinden.\n");
                     break;
 
                 case FREE:
-                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" nicht stattfinden.\n");
+                    b.append(" nicht stattfinden.\n");
                     break;
 
                 case ROOMSUBSTITUTION:
-                    b.append(sub).append(" wird zwischen ").append(TIME_FORMATTER.format(p.getStart())).append(" und ").append(TIME_FORMATTER.format(p.getEnd())).append(" in einem anderen Raum stattfinden.\n");
+                    b.append(" in einem anderen Raum stattfinden.\n");
+                    break;
+
+                default:
+                    b.append(" State: " + p.getCellState().name() + "\n");
                     break;
             }
             if (p.getPeriodText().isPresent() && !p.getPeriodText().get().equals("")) {
@@ -143,6 +156,25 @@ public class DiscordFormatter {
         }
         b.withColor(Color.RED);
         b.withFooterText(e.getClass().getName() + " am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()));
+        return b.build();
+    }
+
+    public static EmbedObject formatErrorMessage(Collection<Exception> e) {
+        EmbedBuilder b = new EmbedBuilder()
+                .withColor(Color.RED)
+                .withTitle("Mehrere Fehler sind aufgetreten.")
+                .withFooterText("Letzter Fehler am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()));
+        Map<Class, Long> map = e.stream().collect(Collectors.groupingBy(Exception::getClass, Collectors.counting()));
+        map.keySet().stream().sorted(Comparator.comparingLong(map::get)).forEach((c) -> b.appendField(map.get(c) + "x", c.getName(), false));
+        return b.build();
+    }
+
+    public static EmbedObject formatSocketErrorMessage(LocalDateTime since) {
+        EmbedBuilder b = new EmbedBuilder()
+                .withColor(Color.RED)
+                .withTitle("Netzwerkfehler")
+                .withDescription("Bitte eine Weile abwarten oder https://goo.gl/5wSdcL nutzen.")
+                .withFooterText("Aktualisiert am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()) + " | Störung besteht seit dem " + DATE_FORMATTER.format(since) + " um " + TIME_FORMATTER.format(since));
         return b.build();
     }
 }
