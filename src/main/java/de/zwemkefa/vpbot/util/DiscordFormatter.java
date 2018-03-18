@@ -6,6 +6,8 @@ import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.util.EmbedBuilder;
 
 import java.awt.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -16,15 +18,25 @@ public class DiscordFormatter {
     private static final String[] DAY_NAMES = new String[]{"Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"};
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d.M.u");
+    private static final DateTimeFormatter DATE_FORMATTER_WO_YEAR = DateTimeFormatter.ofPattern("d.M.");
 
-    public static EmbedObject formatTimetableMessage(Timetable t, String className, boolean filterByTime) {
+    public static EmbedObject formatTimetableMessage(Timetable t, String className, boolean filterByTime, LocalDateTime ttTime) {
+        LocalDateTime currentTime = LocalDateTime.now();
         List<Boolean> emptyDayList = Arrays.asList(t.getEmptyDays());
+
         EmbedBuilder e = new EmbedBuilder();
-        e.withFooterText("Aktualisiert\n am " + DATE_FORMATTER.format(LocalDateTime.now()) + " um " + TIME_FORMATTER.format(LocalDateTime.now()));
+
+        int week = DateHelper.getWeekOfYear(ttTime.toLocalDate());
+        LocalDate start = DateHelper.getDayByWeek(ttTime.getYear(), week, DayOfWeek.MONDAY);
+        LocalDate end = DateHelper.getDayByWeek(ttTime.getYear(), week, DayOfWeek.FRIDAY);
+
+        e.withFooterText("Aktualisiert am " + DATE_FORMATTER.format(currentTime) + " um " + TIME_FORMATTER.format(currentTime));
         e.withTitle("Vertretungsplan " + className);
-        if (filterByTime ? t.getPeriods().stream().filter(p -> p.getEnd().isAfter(LocalDateTime.now())).count() == 0 : t.getPeriods().isEmpty()) {
+        //e.withDescription("Der Vetretungsplan ist leer.\n\n`" + DATE_FORMATTER_WO_YEAR.format(start) + " bis " + DATE_FORMATTER_WO_YEAR.format(end) + "`\n\n");
+
+        if (filterByTime ? t.getPeriods().stream().filter(p -> p.getEnd().isAfter(currentTime)).count() == 0 : t.getPeriods().isEmpty()) {
             if (!emptyDayList.contains(Boolean.TRUE)) {
-                e.withDescription("Der Vertretungsplan ist leer.");
+                e.withDescription("Der Vertretungsplan ist leer.\n\n`" + DATE_FORMATTER_WO_YEAR.format(start) + " bis " + DATE_FORMATTER_WO_YEAR.format(end) + "`");
                 e.withColor(Color.GREEN);
                 t.getMessagesOfDay().forEach(s -> e.appendField("**Nachricht**", s.replaceAll("<b>", "**")
                         .replaceAll("</b>", "**")
@@ -38,7 +50,7 @@ public class DiscordFormatter {
                         .replaceAll("</br>", "\n"), false));
                 return e.build();
             } else if (!emptyDayList.contains(Boolean.FALSE)) {
-                e.withDescription("Es findet kein Unterricht statt.");
+                e.withDescription("Es findet kein Unterricht statt.\n\n`" + DATE_FORMATTER_WO_YEAR.format(start) + " bis " + DATE_FORMATTER_WO_YEAR.format(end) + "`");
                 e.withColor(Color.GREEN);
                 t.getMessagesOfDay().forEach(s -> e.appendField("**Nachricht**", s.replaceAll("<b>", "**")
                         .replaceAll("</b>", "**")
@@ -53,6 +65,7 @@ public class DiscordFormatter {
                 return e.build();
             }
         }
+        e.withDescription("`" + DATE_FORMATTER_WO_YEAR.format(start) + " bis " + DATE_FORMATTER_WO_YEAR.format(end) + "`");
         e.withColor(Color.YELLOW);
         //Stream<Timetable.Period> periods = t.getPeriods().stream().sorted(Comparator.comparing(Timetable.Period::getStart));
         Iterator<Timetable.Period> periods;

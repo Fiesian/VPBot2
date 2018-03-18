@@ -48,12 +48,12 @@ public class TimetableWatcherThread extends Thread {
     public void run() {
         while (true) {
             this.channel.setTypingStatus(true);
-            LocalDateTime checkTime = DateHelper.getDate(LocalDateTime.now());
-            String timetableRaw = UntisIOHelper.getTimetableRaw(this.classId, this.e, checkTime);
-            String newsRaw = UntisIOHelper.getNewsRaw(this.e, checkTime);
+            LocalDateTime ttTime = DateHelper.getDate(LocalDateTime.now());
+            String timetableRaw = UntisIOHelper.getTimetableRaw(this.classId, this.e, ttTime);
+            String newsRaw = UntisIOHelper.getNewsRaw(this.e, ttTime);
             if (timetableRaw != null && newsRaw != null) {
                 Timetable t = Timetable.ofRawJSON(timetableRaw, newsRaw, this.e, this.classId);
-                if (t != null && (this.config.getLastMessageHash() != t.hashCode() || (t.hasEvents(false) && !(config.getLastCheckYear() == checkTime.getYear() && config.getLastCheckWeek() == DateHelper.getWeekOfYear(checkTime.toLocalDate())))) && (t.hasEvents(true) || (config.getLastCheckYear() == checkTime.getYear() && config.getLastCheckWeek() == DateHelper.getWeekOfYear(checkTime.toLocalDate())))) {
+                if (t != null && (this.config.getLastMessageHash() != t.hashCode() || (t.hasEvents(false) && !(config.getLastCheckYear() == ttTime.getYear() && config.getLastCheckWeek() == DateHelper.getWeekOfYear(ttTime.toLocalDate())))) && (t.hasEvents(true) || (config.getLastCheckYear() == ttTime.getYear() && config.getLastCheckWeek() == DateHelper.getWeekOfYear(ttTime.toLocalDate())))) {
                     //TODO: Cleanup, Clarify
                     this.lastCheck = t;
                     RequestBuffer.request(() -> {
@@ -61,11 +61,11 @@ public class TimetableWatcherThread extends Thread {
                             if (this.lastMessage != null) {
                                 this.lastMessage.delete();
                             }
-                            this.lastMessage = channel.sendMessage(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true));
+                            this.lastMessage = channel.sendMessage(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true, ttTime));
                             this.config.setLastMessageId(this.lastMessage.getLongID());
                             this.config.setLastMessageHash(t.hashCode());
-                            this.config.setLastCheckWeek(DateHelper.getWeekOfYear(checkTime.toLocalDate()));
-                            this.config.setLastCheckYear(checkTime.getYear());
+                            this.config.setLastCheckWeek(DateHelper.getWeekOfYear(ttTime.toLocalDate()));
+                            this.config.setLastCheckYear(ttTime.getYear());
                             VPBot.getInstance().saveConfig();
                             this.e.onMessageSuccess();
                             this.channel.setTypingStatus(false);
@@ -83,12 +83,12 @@ public class TimetableWatcherThread extends Thread {
                     } else {
                         RequestBuffer.request(() -> {
                             try {
-                                this.lastMessage.edit(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true));
+                                this.lastMessage.edit(DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true, ttTime));
                                 this.channel.setTypingStatus(false);
                                 this.config.setLastMessageId(this.lastMessage.getLongID());
                                 this.config.setLastMessageHash(t.hashCode());
-                                this.config.setLastCheckWeek(DateHelper.getWeekOfYear(checkTime.toLocalDate()));
-                                this.config.setLastCheckYear(checkTime.getYear());
+                                this.config.setLastCheckWeek(DateHelper.getWeekOfYear(ttTime.toLocalDate()));
+                                this.config.setLastCheckYear(ttTime.getYear());
                                 this.e.onMessageSuccess();
                                 VPBot.getInstance().saveConfig();
                             } catch (DiscordException ex) {

@@ -38,7 +38,7 @@ public class CommandHandler {
                         int classID = VPBot.getInstance().getClassResolver().resolve(cmd[1], exceptionHandler);
                         LocalDateTime time = DateHelper.getDate(LocalDateTime.now());
                         Timetable t = Timetable.ofRawJSON(UntisIOHelper.getTimetableRaw(classID, exceptionHandler, time), UntisIOHelper.getNewsRaw(exceptionHandler, time), exceptionHandler, classID);
-                        VPBot.getInstance().sendMessage(e.getChannel(), DiscordFormatter.formatTimetableMessage(t, cmd[1], false));
+                        VPBot.getInstance().sendMessage(e.getChannel(), DiscordFormatter.formatTimetableMessage(t, cmd[1], false, time));
                         break;
 
                     case "klassen":
