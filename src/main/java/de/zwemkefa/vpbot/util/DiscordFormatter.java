@@ -74,6 +74,14 @@ public class DiscordFormatter {
         else
             periods = t.getPeriods().iterator();
 
+        if (!periods.hasNext()) {
+            for (int i = 0; i <= 4; i++) {
+                if (emptyDayList.get(i)) {
+                    e.appendField(DAY_NAMES[i], "Es findet kein Unterricht statt.", false);
+                }
+            }
+        }
+
         StringBuilder b = null;
         int loopDay = -1;
         while (periods.hasNext()) {
@@ -87,7 +95,7 @@ public class DiscordFormatter {
                 }
                 if (emptyDayList.get(++loopDay)) {  //Change day here
                     b = new StringBuilder();
-                    b.append("Am ").append(DAY_NAMES[loopDay]).append(" findet kein Unterricht statt.\n");
+                    b.append("Es findet kein Unterricht statt.\n");
                 }
 
             }
