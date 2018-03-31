@@ -24,7 +24,7 @@ public class UntisIOHelper {
             con.setRequestProperty(UntisIOHelper.COOKIE_PROPERTY, UntisIOHelper.COOKIE_VALUE);
             con.connect();
             StringBuilder answer = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
             String line;
             while ((line = reader.readLine()) != null) {
                 answer.append(line);
@@ -45,7 +45,7 @@ public class UntisIOHelper {
             con.setRequestProperty(UntisIOHelper.COOKIE_PROPERTY, UntisIOHelper.COOKIE_VALUE);
             con.connect();
             StringBuilder answer = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
             String line;
             while ((line = reader.readLine()) != null) {
                 answer.append(line);
@@ -67,7 +67,7 @@ public class UntisIOHelper {
             con.setRequestProperty(UntisIOHelper.COOKIE_PROPERTY, UntisIOHelper.COOKIE_VALUE);
             con.connect();
             StringBuilder answer = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
             String line;
             while ((line = reader.readLine()) != null) {
                 answer.append(line);
@@ -98,7 +98,7 @@ public class UntisIOHelper {
             new DataOutputStream(con.getOutputStream()).write(UntisIOHelper.PERIOD_POST_DATA);
             con.connect();
             StringBuilder answer = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
             String line;
             while ((line = reader.readLine()) != null) {
                 answer.append(line);
