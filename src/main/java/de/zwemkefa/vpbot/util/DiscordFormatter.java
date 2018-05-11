@@ -10,6 +10,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -118,7 +119,6 @@ public class DiscordFormatter {
             switch (p.getCellState()) {
                 case CANCEL:
                     b.append(" ausfallen.\n");
-                    //TODO: Handle (optional) rescheduleInfo
                     break;
 
                 case SUBSTITUTION:
@@ -138,16 +138,33 @@ public class DiscordFormatter {
                     break;
 
                 case SHIFT:
-                    b.append(" zusätzlich stattfinden.\n"); //Hotfix 2.2.3
-                    //TODO: Handle rescheduleInfo
+                    b.append(" zusätzlich stattfinden.\n");
                     break;
 
                 default:
                     b.append(" State: " + p.getCellState().name() + "\n");
                     break;
             }
+
+            if(p.getRescheduleInfo().isPresent()){
+                b.append("\u0009*")
+                        .append(p.getRescheduleInfo().get().isSource() ? "Neuer Termin: " : "Ursprünglicher Termin: ")
+                        .append(p.getRescheduleInfo().get().getStart().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.GERMAN))
+                        .append(", der ")
+                        .append(DATE_FORMATTER_WO_YEAR.format(p.getRescheduleInfo().get().getStart()))
+                        .append(", ");
+
+                String rsPeriodName = VPBot.getInstance().getPeriodResolver().getPeriod(p.getRescheduleInfo().get().getStart(), p.getRescheduleInfo().get().getEnd());
+                if (rsPeriodName == null)
+                    b.append(TIME_FORMATTER.format(p.getStart())).append(" bis ").append(TIME_FORMATTER.format(p.getEnd()));
+                else
+                    b.append(rsPeriodName).append(". Std.");
+
+                b.append("*\n");
+            }
+
             if (p.getPeriodText().isPresent() && !p.getPeriodText().get().equals("")) {
-                b.append("Anmerkung: \"").append(p.getPeriodText().get()).append("\"\n");
+                b.append("\u0009*Anmerkung:* \"").append(p.getPeriodText().get()).append("*\"*\n");
             }
         }
         if (b != null) {

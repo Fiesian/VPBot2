@@ -1,5 +1,6 @@
 package de.zwemkefa.vpbot.timetable;
 
+import de.zwemkefa.vpbot.util.DateHelper;
 import de.zwemkefa.vpbot.util.ExceptionHandler;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -70,13 +71,13 @@ public class Timetable {
 
             for (Integer i = 0; i < elementPeriods.length(); i++) {
                 JSONObject period = elementPeriods.getJSONObject(i);
-                LocalDate date = Timetable.toLocalDate(period.get("date").toString());
+                LocalDate date = DateHelper.parseISODate(period.get("date").toString());
                 emptyDays[date.getDayOfWeek().getValue() - 1] = false;
 
                 CellState state = CellState.valueOf(period.getString("cellState"));
                 if (state != CellState.STANDARD) {
-                    LocalDateTime startTime = Timetable.toLocalDateTime(date, period.getInt("startTime"));
-                    LocalDateTime endTime = Timetable.toLocalDateTime(date, period.getInt("endTime"));
+                    LocalDateTime startTime = DateHelper.getDayAtTime(date, period.getInt("startTime"));
+                    LocalDateTime endTime = DateHelper.getDayAtTime(date, period.getInt("endTime"));
                     JSONArray elements = period.getJSONArray("elements");
                     int subject = 0;
                     for (Integer j = 0; j < elements.length(); j++) {
@@ -86,7 +87,18 @@ public class Timetable {
                             break;
                         }
                     }
-                    periods.add(new Period(state, startTime, endTime, subject, period.has("periodText") ? Optional.of(period.getString("periodText")) : Optional.empty()));
+
+                    Optional<Period.RescheduleInfo> info = Optional.empty();
+                    if(period.has("rescheduleInfo")){
+                        JSONObject rsInfo = period.getJSONObject("rescheduleInfo");
+                        LocalDate rsDate = DateHelper.parseISODate(rsInfo.get("date").toString());
+                        LocalDateTime rsStartTime = DateHelper.getDayAtTime(rsDate, rsInfo.getInt("startTime"));
+                        LocalDateTime rsEndTime = DateHelper.getDayAtTime(rsDate, rsInfo.getInt("endTime"));
+                        boolean rsIsSource = rsInfo.getBoolean("isSource");
+                        info = Optional.of(new Period.RescheduleInfo(rsStartTime, rsEndTime, rsIsSource));
+                    }
+
+                    periods.add(new Period(state, startTime, endTime, subject, period.has("periodText") ? Optional.of(period.getString("periodText")) : Optional.empty(), info));
                 }
             }
         } catch (Exception e) {
@@ -98,14 +110,6 @@ public class Timetable {
         }
         periods.sort(Comparator.comparing(Period::getStart));
         return new Timetable(emptyDays, periods, subjectNames, messagesOfDay);
-    }
-
-    private static LocalDate toLocalDate(String s) {
-        return LocalDate.parse(s, DateTimeFormatter.BASIC_ISO_DATE);
-    }
-
-    private static LocalDateTime toLocalDateTime(LocalDate date, int time) {
-        return date.atTime(time / 100, time % 100);
     }
 
     public Boolean[] getEmptyDays() {
@@ -132,20 +136,18 @@ public class Timetable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         Timetable timetable = (Timetable) o;
-
-        // Probably incorrect - comparing Object[] arrays with Arrays.equals
-        if (!Arrays.equals(emptyDays, timetable.emptyDays)) return false;
-        if (periods != null ? !periods.equals(timetable.periods) : timetable.periods != null) return false;
-        return subjectNames != null ? subjectNames.equals(timetable.subjectNames) : timetable.subjectNames == null;
+        return Arrays.equals(emptyDays, timetable.emptyDays) &&
+                Objects.equals(periods, timetable.periods) &&
+                Objects.equals(subjectNames, timetable.subjectNames) &&
+                Objects.equals(messagesOfDay, timetable.messagesOfDay);
     }
 
     @Override
     public int hashCode() {
-        int result = Arrays.hashCode(emptyDays);
-        result = 31 * result + (periods != null ? periods.hashCode() : 0);
-        result = 31 * result + (subjectNames != null ? subjectNames.hashCode() : 0);
+
+        int result = Objects.hash(periods, subjectNames, messagesOfDay);
+        result = 31 * result + Arrays.hashCode(emptyDays);
         return result;
     }
 
@@ -159,13 +161,15 @@ public class Timetable {
         private LocalDateTime end;
         private int subject;
         private Optional<String> periodText;
+        private Optional<RescheduleInfo> rescheduleInfo;
 
-        Period(CellState cellState, LocalDateTime start, LocalDateTime end, int subject, Optional<String> periodText) {
+        Period(CellState cellState, LocalDateTime start, LocalDateTime end, int subject, Optional<String> periodText, Optional<RescheduleInfo> rescheduleInfo) {
             this.cellState = cellState;
             this.start = start;
             this.end = end;
             this.subject = subject;
             this.periodText = periodText;
+            this.rescheduleInfo = rescheduleInfo;
         }
 
         public CellState getCellState() {
@@ -188,27 +192,67 @@ public class Timetable {
             return periodText;
         }
 
+        public Optional<RescheduleInfo> getRescheduleInfo() {
+            return rescheduleInfo;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-
             Period period = (Period) o;
-
-            if (subject != period.subject) return false;
-            if (cellState != period.cellState) return false;
-            if (start != null ? !start.equals(period.start) : period.start != null) return false;
-            return (end != null ? end.equals(period.end) : period.end == null) && (periodText.isPresent() ? periodText.get().equals(period.periodText.get()) : period.periodText.isPresent());
+            return subject == period.subject &&
+                    cellState == period.cellState &&
+                    Objects.equals(start, period.start) &&
+                    Objects.equals(end, period.end) &&
+                    Objects.equals(periodText, period.periodText) &&
+                    Objects.equals(rescheduleInfo, period.rescheduleInfo);
         }
 
         @Override
         public int hashCode() {
-            int result = cellState != null ? cellState.hashCode() : 0;
-            result = 31 * result + (start != null ? start.hashCode() : 0);
-            result = 31 * result + (end != null ? end.hashCode() : 0);
-            result = 31 * result + subject;
-            result = 31 * result + (periodText.isPresent() ? periodText.get().hashCode() : 0);
-            return result;
+
+            return Objects.hash(cellState, start, end, subject, periodText, rescheduleInfo);
+        }
+
+        public static class RescheduleInfo{
+            private LocalDateTime start;
+            private LocalDateTime end;
+            private boolean isSource;
+
+            RescheduleInfo(LocalDateTime start, LocalDateTime end, boolean isSource) {
+                this.start = start;
+                this.end = end;
+                this.isSource = isSource;
+            }
+
+            public LocalDateTime getStart() {
+                return start;
+            }
+
+            public LocalDateTime getEnd() {
+                return end;
+            }
+
+            public boolean isSource() {
+                return isSource;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                RescheduleInfo that = (RescheduleInfo) o;
+                return isSource == that.isSource &&
+                        Objects.equals(start, that.start) &&
+                        Objects.equals(end, that.end);
+            }
+
+            @Override
+            public int hashCode() {
+
+                return Objects.hash(start, end, isSource);
+            }
         }
     }
 }

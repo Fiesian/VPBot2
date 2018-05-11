@@ -3,6 +3,7 @@ package de.zwemkefa.vpbot.util;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class DateHelper {
     public static LocalDateTime getDate(LocalDateTime d) {
@@ -30,5 +31,13 @@ public class DateHelper {
         LocalDate b = LocalDate.ofYearDay(year, 1);
         b = b.minusDays(b.getDayOfWeek().getValue() - 1); //Monday: 1 -> 0
         return b.plusWeeks(week).plusDays(day.getValue() - 1);
+    }
+
+    public static LocalDate parseISODate(String s) {
+        return LocalDate.parse(s, DateTimeFormatter.BASIC_ISO_DATE);
+    }
+
+    public static LocalDateTime getDayAtTime(LocalDate date, int time) {
+        return date.atTime(time / 100, time % 100);
     }
 }
