@@ -150,7 +150,7 @@ public class Timetable {
     }
 
     public enum CellState {
-        STANDARD, ADDITIONAL, CANCEL, SUBSTITUTION, FREE, ROOMSUBSTITUTION
+        STANDARD, ADDITIONAL, CANCEL, SUBSTITUTION, FREE, ROOMSUBSTITUTION, SHIFT
     }
 
     public static class Period {

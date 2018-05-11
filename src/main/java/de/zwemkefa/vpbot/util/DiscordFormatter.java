@@ -118,6 +118,7 @@ public class DiscordFormatter {
             switch (p.getCellState()) {
                 case CANCEL:
                     b.append(" ausfallen.\n");
+                    //TODO: Handle (optional) rescheduleInfo
                     break;
 
                 case SUBSTITUTION:
@@ -134,6 +135,11 @@ public class DiscordFormatter {
 
                 case ROOMSUBSTITUTION:
                     b.append(" in einem anderen Raum stattfinden.\n");
+                    break;
+
+                case SHIFT:
+                    b.append(" zusätzlich stattfinden.\n"); //Hotfix 2.2.3
+                    //TODO: Handle rescheduleInfo
                     break;
 
                 default:
