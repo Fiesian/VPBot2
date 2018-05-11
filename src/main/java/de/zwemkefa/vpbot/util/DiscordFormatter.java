@@ -88,11 +88,18 @@ public class DiscordFormatter {
         while (periods.hasNext()) {
             Timetable.Period p = periods.next();
             int d = p.getStart().getDayOfWeek().getValue() - 1;
+
+            if (b != null && b.length() > 900) {
+                b.setLength(b.length() - 1);
+                e.appendField(DAY_NAMES[loopDay], b.toString(), true);
+                b = new StringBuilder();
+            }
+
             while (loopDay < d && loopDay < 4) {
                 if (b != null) {
                     b.setLength(b.length() - 1);
                     e.appendField(DAY_NAMES[loopDay], b.toString(), false);
-                    b = null;
+                    b = new StringBuilder();
                 }
                 if (emptyDayList.get(++loopDay)) {  //Change day here
                     b = new StringBuilder();
@@ -100,11 +107,8 @@ public class DiscordFormatter {
                 }
 
             }
+
             if (b == null) {
-                b = new StringBuilder();
-            } else if (b.length() > 950) {
-                b.setLength(b.length() - 1);
-                e.appendField(DAY_NAMES[loopDay - 1], b.toString(), true);
                 b = new StringBuilder();
             }
 
@@ -167,7 +171,7 @@ public class DiscordFormatter {
                 b.append("\u0009*Anmerkung:* \"").append(p.getPeriodText().get()).append("*\"*\n");
             }
         }
-        if (b != null) {
+        if (b != null && !b.toString().equals("")) {
             b.setLength(b.length() - 1);
             e.appendField(DAY_NAMES[loopDay], b.toString(), false);
             //b = null;

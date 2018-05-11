@@ -7,7 +7,6 @@ import org.json.JSONObject;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Timetable {
@@ -108,7 +107,7 @@ public class Timetable {
 
             return null;
         }
-        periods.sort(Comparator.comparing(Period::getStart));
+        periods.sort(Comparator.comparing(Period::getStart).thenComparing(Period::getEnd).thenComparing(Period::getCellState));
         return new Timetable(emptyDays, periods, subjectNames, messagesOfDay);
     }
 
