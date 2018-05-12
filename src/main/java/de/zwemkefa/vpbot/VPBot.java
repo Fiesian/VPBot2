@@ -1,6 +1,7 @@
 package de.zwemkefa.vpbot;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import de.zwemkefa.vpbot.cmd.CommandHandler;
 import de.zwemkefa.vpbot.config.ChannelConfig;
 import de.zwemkefa.vpbot.io.UntisClassResolver;
@@ -38,7 +39,7 @@ public class VPBot {
     private VPBot() {
         VPBot.instance = this;
         System.out.println("Starting VPBot v" + VPBot.getVersion());
-        this.gson = new Gson();
+        this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
         if (!CONFIG_PATH.toFile().exists()) {
             this.channelConfig = new ChannelConfig();
@@ -120,6 +121,19 @@ public class VPBot {
         RequestBuffer.request(() -> {
             try {
                 channel.sendMessage(message);
+            } catch (DiscordException e) {
+                System.err.println("Could not send message: ");
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void sendMessages(IChannel channel, EmbedObject[] message) {
+        RequestBuffer.request(() -> {
+            try {
+                for (int i = 0; i < message.length; i++) {
+                    channel.sendMessage(message[i]);
+                }
             } catch (DiscordException e) {
                 System.err.println("Could not send message: ");
                 e.printStackTrace();

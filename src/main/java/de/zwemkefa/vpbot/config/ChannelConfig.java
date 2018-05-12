@@ -1,19 +1,30 @@
 package de.zwemkefa.vpbot.config;
 
+import com.google.gson.annotations.Expose;
 import de.zwemkefa.vpbot.VPBot;
 import de.zwemkefa.vpbot.util.DateHelper;
+import sx.blah.discord.handle.obj.IMessage;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 
 public class ChannelConfig {
 
+    @Expose
     private HashSet<Entry> channels = new HashSet<>();
 
+    @Expose
     private String token = "";
+
+    @Expose
     private int version_major = 0;
+
+    @Expose
     private int version_minor = 0;
+
+    @Expose
     private int version_patch = 0;
 
     public HashSet<Entry> getChannels() {
@@ -58,12 +69,28 @@ public class ChannelConfig {
     }
 
     public static class Entry {
+        @Expose
         private long id;
+
+        @Expose
         private String className;
+
+        @Expose
         private long checkTime = 600L;
-        private long lastMessageId = 0;
+
+        @Expose(serialize = false)
+        private long lastMessageId = 0; //OLD
+
+        @Expose
+        private ArrayList<Long> lastMessages;
+
+        @Expose
         private int lastMessageHash = 0;
+
+        @Expose
         private int lastCheckWeek = DateHelper.getWeekOfYear(DateHelper.getDate(LocalDateTime.now()).toLocalDate()); //Push on first check even if there are no events
+
+        @Expose
         private int lastCheckYear = DateHelper.getDate(LocalDateTime.now()).getYear();
 
         public Entry() {
@@ -86,12 +113,15 @@ public class ChannelConfig {
             return checkTime;
         }
 
-        public long getLastMessageId() {
-            return lastMessageId;
+        public ArrayList<Long> getLastMessages() {
+            if (lastMessages.isEmpty() && lastMessageId != 0)
+                lastMessages.add(lastMessageId);
+            return lastMessages;
         }
 
-        public void setLastMessageId(long lastMessageId) {
-            this.lastMessageId = lastMessageId;
+        public void setLastMessages(ArrayList<IMessage> messages) {
+            this.lastMessages.clear();
+            messages.forEach(m -> this.lastMessages.add(m.getLongID()));
         }
 
         public int getLastMessageHash() {
@@ -122,28 +152,20 @@ public class ChannelConfig {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-
             Entry entry = (Entry) o;
-
-            if (id != entry.id) return false;
-            if (checkTime != entry.checkTime) return false;
-            if (lastMessageId != entry.lastMessageId) return false;
-            if (lastMessageHash != entry.lastMessageHash) return false;
-            if (lastCheckWeek != entry.lastCheckWeek) return false;
-            if (lastCheckYear != entry.lastCheckYear) return false;
-            return className != null ? className.equals(entry.className) : entry.className == null;
+            return id == entry.id &&
+                    checkTime == entry.checkTime &&
+                    lastMessageHash == entry.lastMessageHash &&
+                    lastCheckWeek == entry.lastCheckWeek &&
+                    lastCheckYear == entry.lastCheckYear &&
+                    Objects.equals(className, entry.className) &&
+                    Objects.equals(lastMessages, entry.lastMessages);
         }
 
         @Override
         public int hashCode() {
-            int result = (int) (id ^ (id >>> 32));
-            result = 31 * result + (className != null ? className.hashCode() : 0);
-            result = 31 * result + (int) (checkTime ^ (checkTime >>> 32));
-            result = 31 * result + (int) (lastMessageId ^ (lastMessageId >>> 32));
-            result = 31 * result + lastMessageHash;
-            result = 31 * result + lastCheckWeek;
-            result = 31 * result + lastCheckYear;
-            return result;
+
+            return Objects.hash(id, className, checkTime, lastMessages, lastMessageHash, lastCheckWeek, lastCheckYear);
         }
     }
 }
