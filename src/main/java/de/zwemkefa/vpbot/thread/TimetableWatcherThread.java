@@ -22,7 +22,7 @@ import java.util.ArrayList;
 public class TimetableWatcherThread extends Thread {
     private ChannelConfig.Entry config;
     private Timetable lastCheck;
-    private ArrayList<IMessage> lastMessages;
+    private ArrayList<IMessage> lastMessages = new ArrayList<>();
     private IChannel channel;
     private TTWExceptionHandler e;
     private int classId;
@@ -35,7 +35,12 @@ public class TimetableWatcherThread extends Thread {
 
         this.classId = VPBot.getInstance().getClassResolver().resolve(this.config.getClassName(), e);
 
-        config.getLastMessages().forEach(s -> this.lastMessages.add(this.channel.fetchMessage(s)));
+        config.getLastMessages().forEach(s -> {
+            IMessage i = this.channel.fetchMessage(s);
+            if (i != null) {
+                this.lastMessages.add(i);
+            }
+        });
 
         if (this.classId == 0) {
             return;
@@ -87,9 +92,9 @@ public class TimetableWatcherThread extends Thread {
                                 EmbedObject[] o = DiscordFormatter.formatTimetableMessage(t, this.config.getClassName(), true, ttTime);
 
                                 for (int i = 0; i < o.length || i < lastMessages.size(); i++) {
-                                    if (i < o.length) {
+                                    if (i >= o.length) {
                                         lastMessages.get(i).delete();
-                                    } else if (i < lastMessages.size()) {
+                                    } else if (i >= lastMessages.size()) {
                                         this.lastMessages.add(this.channel.sendMessage(o[i]));
                                     } else {
                                         this.lastMessages.get(i).edit(o[i]);

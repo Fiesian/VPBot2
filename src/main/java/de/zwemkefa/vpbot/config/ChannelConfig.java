@@ -82,7 +82,7 @@ public class ChannelConfig {
         private long lastMessageId = 0; //OLD
 
         @Expose
-        private ArrayList<Long> lastMessages;
+        private ArrayList<Long> lastMessages = new ArrayList<>();
 
         @Expose
         private int lastMessageHash = 0;

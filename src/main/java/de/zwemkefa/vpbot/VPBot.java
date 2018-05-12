@@ -27,7 +27,7 @@ public class VPBot {
 
     public static final int VERSION_MAJOR = 2;
     public static final int VERSION_MINOR = 3;
-    public static final int VERSION_PATCH = 0;
+    public static final int VERSION_PATCH = 1;
     private static final Path CONFIG_PATH = Paths.get("config.json");
     private static VPBot instance;
     private IDiscordClient client;

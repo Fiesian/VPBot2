@@ -145,7 +145,7 @@ public class Timetable {
     @Override
     public int hashCode() {
 
-        int result = Objects.hash(periods, subjectNames, messagesOfDay);
+        int result = Objects.hash(periods);
         result = 31 * result + Arrays.hashCode(emptyDays);
         return result;
     }
@@ -210,8 +210,8 @@ public class Timetable {
 
         @Override
         public int hashCode() {
-
-            return Objects.hash(cellState, start, end, subject, periodText, rescheduleInfo);
+            return Objects.hash(cellState.name(), start, end, subject, periodText, rescheduleInfo);
+            //Enum hash changes after restart. Wtf?!
         }
 
         public static class RescheduleInfo{
