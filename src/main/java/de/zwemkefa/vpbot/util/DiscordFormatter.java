@@ -21,25 +21,25 @@ public class DiscordFormatter {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d.M.u");
     private static final DateTimeFormatter DATE_FORMATTER_WO_YEAR = DateTimeFormatter.ofPattern("d.M.");
 
-    public static EmbedObject formatTimetableMessage(Timetable t, String className, boolean filterByTime, LocalDateTime ttTime) {
+    public static EmbedObject[] formatTimetableMessage(Timetable t, String className, boolean filterByTime, LocalDateTime ttTime) {
         LocalDateTime currentTime = LocalDateTime.now();
         List<Boolean> emptyDayList = Arrays.asList(t.getEmptyDays());
 
         EmbedBuilder e = new EmbedBuilder();
 
+        ArrayList<Map.Entry<String, String>> fields = new ArrayList<>();
+
         int week = DateHelper.getWeekOfYear(ttTime.toLocalDate());
         LocalDate start = DateHelper.getDayByWeek(ttTime.getYear(), week, DayOfWeek.MONDAY);
         LocalDate end = DateHelper.getDayByWeek(ttTime.getYear(), week, DayOfWeek.FRIDAY);
 
-        e.withFooterText("Aktualisiert am " + DATE_FORMATTER.format(currentTime) + " um " + TIME_FORMATTER.format(currentTime));
         e.withTitle("Vertretungsplan " + className);
-        //e.withDescription("Der Vetretungsplan ist leer.\n\n`" + DATE_FORMATTER_WO_YEAR.format(start) + " bis " + DATE_FORMATTER_WO_YEAR.format(end) + "`\n\n");
 
         if (filterByTime ? t.getPeriods().stream().filter(p -> p.getEnd().isAfter(currentTime)).count() == 0 : t.getPeriods().isEmpty()) {
             if (!emptyDayList.contains(Boolean.TRUE)) {
                 e.withDescription("Der Vertretungsplan ist leer.\n\n`" + DATE_FORMATTER_WO_YEAR.format(start) + " bis " + DATE_FORMATTER_WO_YEAR.format(end) + "`");
                 e.withColor(Color.GREEN);
-                t.getMessagesOfDay().forEach(s -> e.appendField("**Nachricht**", s.replaceAll("<b>", "**")
+                t.getMessagesOfDay().forEach(s -> fields.add(new AbstractMap.SimpleEntry("**Nachricht**", s.replaceAll("<b>", "**")
                         .replaceAll("</b>", "**")
                         .replaceAll("<i>", "*")
                         .replaceAll("</i>", "*")
@@ -48,12 +48,12 @@ public class DiscordFormatter {
                         .replaceAll("<del>", "~~")
                         .replaceAll("</del>", "~~")
                         .replaceAll("<br>", "\n")
-                        .replaceAll("</br>", "\n"), false));
-                return e.build();
+                        .replaceAll("</br>", "\n"))));
+                return splitFields("Aktualisiert am " + DATE_FORMATTER.format(currentTime) + " um " + TIME_FORMATTER.format(currentTime), e, fields);
             } else if (!emptyDayList.contains(Boolean.FALSE)) {
                 e.withDescription("Es findet kein Unterricht statt.\n\n`" + DATE_FORMATTER_WO_YEAR.format(start) + " bis " + DATE_FORMATTER_WO_YEAR.format(end) + "`");
                 e.withColor(Color.GREEN);
-                t.getMessagesOfDay().forEach(s -> e.appendField("**Nachricht**", s.replaceAll("<b>", "**")
+                t.getMessagesOfDay().forEach(s -> fields.add(new AbstractMap.SimpleEntry<>("**Nachricht**", s.replaceAll("<b>", "**")
                         .replaceAll("</b>", "**")
                         .replaceAll("<i>", "*")
                         .replaceAll("</i>", "*")
@@ -62,8 +62,8 @@ public class DiscordFormatter {
                         .replaceAll("<del>", "~~")
                         .replaceAll("</del>", "~~")
                         .replaceAll("<br>", "\n")
-                        .replaceAll("</br>", "\n"), false));
-                return e.build();
+                        .replaceAll("</br>", "\n"))));
+                return splitFields("Aktualisiert am " + DATE_FORMATTER.format(currentTime) + " um " + TIME_FORMATTER.format(currentTime), e, fields);
             }
         }
         e.withDescription("`" + DATE_FORMATTER_WO_YEAR.format(start) + " bis " + DATE_FORMATTER_WO_YEAR.format(end) + "`");
@@ -78,7 +78,7 @@ public class DiscordFormatter {
         if (!periods.hasNext()) {
             for (int i = 0; i <= 4; i++) {
                 if (emptyDayList.get(i)) {
-                    e.appendField(DAY_NAMES[i], "Es findet kein Unterricht statt.", false);
+                    fields.add(new AbstractMap.SimpleEntry<>(DAY_NAMES[i], "Es findet kein Unterricht statt."));
                 }
             }
         }
@@ -89,16 +89,10 @@ public class DiscordFormatter {
             Timetable.Period p = periods.next();
             int d = p.getStart().getDayOfWeek().getValue() - 1;
 
-            if (b != null && b.length() > 900) {
-                b.setLength(b.length() - 1);
-                e.appendField(DAY_NAMES[loopDay], b.toString(), true);
-                b = new StringBuilder();
-            }
-
             while (loopDay < d && loopDay < 4) {
                 if (b != null) {
                     b.setLength(b.length() - 1);
-                    e.appendField(DAY_NAMES[loopDay], b.toString(), false);
+                    fields.add(new AbstractMap.SimpleEntry<>(DAY_NAMES[loopDay], b.toString()));
                     b = new StringBuilder();
                 }
                 if (emptyDayList.get(++loopDay)) {  //Change day here
@@ -173,11 +167,11 @@ public class DiscordFormatter {
         }
         if (b != null && !b.toString().equals("")) {
             b.setLength(b.length() - 1);
-            e.appendField(DAY_NAMES[loopDay], b.toString(), false);
-            //b = null;
+            fields.add(new AbstractMap.SimpleEntry<>(DAY_NAMES[loopDay], b.toString()));
+            b = null;
         }
 
-        t.getMessagesOfDay().forEach(s -> e.appendField("--Nachricht--", s.replaceAll("<b>", "**")
+        t.getMessagesOfDay().forEach(s -> fields.add(new AbstractMap.SimpleEntry<>("--Nachricht--", s.replaceAll("<b>", "**")
                 .replaceAll("</b>", "**")
                 .replaceAll("<i>", "*")
                 .replaceAll("</i>", "*")
@@ -186,9 +180,48 @@ public class DiscordFormatter {
                 .replaceAll("<del>", "~~")
                 .replaceAll("</del>", "~~")
                 .replaceAll("<br>", "\n")
-                .replaceAll("</br>", "\n"), false));
+                .replaceAll("</br>", "\n"))));
 
-        return e.build();
+        return splitFields("Aktualisiert am " + DATE_FORMATTER.format(currentTime) + " um " + TIME_FORMATTER.format(currentTime), e, fields);
+    }
+
+    private static EmbedObject[] splitFields(String footerText, EmbedBuilder first, ArrayList<Map.Entry<String, String>> fields) {
+        ArrayList<Map.Entry<String, String>> splittedFields = new ArrayList<>();
+        for (int i = 0; i < fields.size(); i++) {
+            String head = fields.get(i).getKey();
+            String content = fields.get(i).getValue();
+            if (head.length() + content.length() < 1000) {
+                splittedFields.add(fields.get(i));
+            } else {
+                String[] splittedContent = content.split("\n");
+                int j = 0;
+                StringBuilder c = new StringBuilder(splittedContent[0]);
+
+                while (j < splittedContent.length) {
+                    while (c.length() + splittedContent[++j].length() + head.length() < 1000) {
+                        c.append(splittedContent[i]);
+                    }
+                    splittedFields.add(new AbstractMap.SimpleEntry<>(head, c.toString()));
+                    c = new StringBuilder(splittedContent[j]);
+                }
+            }
+        }
+
+        ArrayList<EmbedObject> m = new ArrayList<>();
+        EmbedBuilder o = first;
+        for (int k = 0; k < splittedFields.size(); k++) {
+            Map.Entry<String, String> f = splittedFields.get(k);
+            if (o.getTotalVisibleCharacters() + f.getValue().length() + f.getKey().length() < 5900) {
+                o.appendField(f.getKey(), f.getValue(), false);
+            } else {
+                m.add(o.build());
+                o = new EmbedBuilder();
+                o.appendField(f.getKey(), f.getValue(), false);
+            }
+        }
+        o.withFooterText(footerText);
+        m.add(o.build());
+        return (EmbedObject[]) m.toArray();
     }
 
     public static EmbedObject formatErrorMessage(Exception e) {
