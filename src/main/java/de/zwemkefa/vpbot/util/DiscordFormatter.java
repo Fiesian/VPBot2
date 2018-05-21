@@ -90,7 +90,7 @@ public class DiscordFormatter {
             int d = p.getStart().getDayOfWeek().getValue() - 1;
 
             while (loopDay < d && loopDay < 4) {
-                if (b != null) {
+                if (b != null && b.length() > 0) {
                     b.setLength(b.length() - 1);
                     fields.add(new AbstractMap.SimpleEntry<>(DAY_NAMES[loopDay], b.toString()));
                     b = new StringBuilder();
